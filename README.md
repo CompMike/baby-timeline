@@ -68,13 +68,25 @@ exact overlap dates, how many days both parties are here, and each side's full s
 Bands are solid when both stays are confirmed and dashed when either comes from an
 option you're still comparing — those tooltips are tagged "if you pick these options".
 
+## Header font
+
+The title is set in **Simply Playful** by Keithzo, embedded as a base64 WOFF2 in
+`index.html` (adds ~36 KB). Licence and provenance are in `font/`. Its letters are
+individually coloured from the crib palette, written as static spans rather than
+painted by script so the header renders on first paint.
+
+Note the per-letter spans suppress kerning, and they are `inline-block`, which lets a
+line break fall between any two letters — hence `h1 .w { white-space: nowrap }`
+around each word. Keep that rule if you edit the title.
+
 ## Look and feel
 
-- The palette lives in the two `:root` blocks at the top of the `<style>` (light,
-  then dark). `--baby`, `--visit`, `--work`, `--family` are the four category
+- The palette lives in the single `:root` block at the top of the `<style>`.
+  The page is deliberately **light-only**: there is no dark palette, and
+  `color-scheme: light` keeps scrollbars and controls light on dark systems. `--baby`, `--visit`, `--work`, `--family` are the four category
   colours; `--wood` tints the crib; `--hero-a` / `--hero-b` are the header gradient.
-- The crib is a hand-written inline `<svg>` in the header — no image file, and it
-  picks up the palette variables, so it re-tints automatically in dark mode.
+- The crib is a hand-written inline `<svg>` in the header — no image file; it draws
+  from the same palette variables as everything else.
 - Decorative layers (date labels, gridlines, connectors) are `pointer-events: none`
   so they don't block the overlap-band tooltips underneath.
 
