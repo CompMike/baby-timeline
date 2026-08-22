@@ -12,7 +12,24 @@ Open `index.html` directly in a browser, or serve the folder:
 
 then visit http://localhost:8777
 
-## Publishing
+## Deploying to baby.cheryleandmichael.com
+
+The site is GitHub Pages, served from `main` at the repo root, so `index.html` *is*
+the deployed page. To update it:
+
+    git add -A && git commit -m "update dates" && git push
+
+Pages rebuilds within a minute or so. `CNAME` holds the custom domain and must stay
+in the repo — deleting it un-sets the domain in GitHub's settings.
+
+DNS lives at Hover: a `CNAME` record for host `baby` pointing at `compmike.github.io.`
+The domain also has a wildcard `*` record (Hover's parking page); the explicit `baby`
+record takes precedence over it. Email (Hover hosted, `mx.hover.com.cust.hostedemail.com`)
+is untouched by this setup, since the nameservers stay at Hover.
+
+The page sends `noindex, nofollow` — reachable by link, kept out of search results.
+
+## Publishing to a Claude Artifact
 
 Published as a Claude Artifact:
 https://claude.ai/code/artifact/f1d908dd-5f10-4612-b8ae-160afce3c285
