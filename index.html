@@ -18,6 +18,8 @@
     --accent: #d4818b;
     --baby: #d4818b;
     --visit: #7ea8c4;
+    --edwina: #9a89c4;
+    --loretta: #5aa39a;
     --work: #8fb59a;
     --family: #e0a566;
     --today: #e0705f;
@@ -44,6 +46,10 @@
       --accent: #eda3ab;
       --baby: #eda3ab;
       --visit: #9cc4dd;
+    --edwina: #b7a9e4;
+    --loretta: #82c3b8;
+      --edwina: #b7a9e4;
+      --loretta: #82c3b8;
       --work: #a8ccb2;
       --family: #f0bd82;
       --today: #f28775;
@@ -65,6 +71,8 @@
     --accent: #eda3ab;
     --baby: #eda3ab;
     --visit: #9cc4dd;
+    --edwina: #b7a9e4;
+    --loretta: #82c3b8;
     --work: #a8ccb2;
     --family: #f0bd82;
     --today: #f28775;
@@ -350,9 +358,10 @@
 
   <div class="legend">
     <span><i class="sw" style="background:var(--baby)"></i> Baby</span>
-    <span><i class="sw" style="background:var(--visit)"></i> Visitors</span>
+    <span><i class="sw" style="background:var(--visit)"></i> Nida &amp; Rae</span>
+    <span><i class="sw" style="background:var(--edwina)"></i> Edwina</span>
+    <span><i class="sw" style="background:var(--loretta)"></i> Loretta</span>
     <span><i class="sw" style="background:var(--work)"></i> Work &amp; leave</span>
-    <span><i class="sw" style="background:var(--family)"></i> Family</span>
     <span><i class="sw dia" style="background:var(--ink-faint)"></i> Single-day milestone</span>
     <span><i class="sw" style="background:repeating-linear-gradient(45deg,rgba(224,112,95,.7) 0 3px,transparent 3px 6px)"></i> Overlapping visitors — hover for dates</span>
   </div>
@@ -370,7 +379,8 @@
 
 <script>
 /* ---------------- data ---------------- */
-const CAT = { baby: 'var(--baby)', visit: 'var(--visit)', work: 'var(--work)', family: 'var(--family)' };
+const CAT = { baby: 'var(--baby)', visit: 'var(--visit)', edwina: 'var(--edwina)',
+              loretta: 'var(--loretta)', work: 'var(--work)', family: 'var(--family)' };
 
 const CHERYLE_LEAVE = { start: '2026-09-26', end: '2027-02-01' };
 
@@ -394,12 +404,12 @@ const EVENTS = [
   { id:'nida-va',  label:'Virginia',             start:'2026-10-25', end:'2026-11-03', cat:'visit', child:true },
   { id:'nida-ny2', label:'New York — hotel',     start:'2026-11-03', end:'2026-11-05', cat:'visit', child:true },
 
-  { id:'edw',      label:'Edwina visits', group:'edwina', cat:'visit', visitor:true, options:[
+  { id:'edw',      label:'Edwina visits', group:'edwina', cat:'edwina', visitor:true, options:[
       { n:1, label:'Option 1', spans:[{ start:'2026-11-01', end:'2026-11-14' }] },
       { n:2, label:'Option 2', spans:[{ start:'2026-10-03', end:'2026-10-17' }] } ] },
-  { id:'edw-bday', label:"Edwina's 70th birthday", date:'2026-10-17', cat:'family' },
+  { id:'edw-bday', label:"Edwina's 70th birthday", date:'2026-10-17', cat:'edwina' },
 
-  { id:'lor',      label:'Loretta visits', group:'loretta', cat:'visit', visitor:true, options:[
+  { id:'lor',      label:'Loretta visits', group:'loretta', cat:'loretta', visitor:true, options:[
       { n:1, label:'Option 1 — pick up Manila unit', spans:[{ start:'2026-10-23', end:'2026-10-25' }] },
       { n:2, label:'Option 2 — window',              spans:[{ start:'2026-10-04', end:'2026-10-18' }] } ] },
 
