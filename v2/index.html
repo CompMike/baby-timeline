@@ -227,6 +227,113 @@
     text-transform: uppercase; color: var(--today); font-weight: 600;
   }
 
+
+  /* ---- edit drawer ---- */
+  .edit-link {
+    appearance: none; background: none; border: 0; padding: 0;
+    font: inherit; color: inherit; text-decoration: underline; cursor: pointer;
+  }
+  .scrim {
+    position: fixed; inset: 0; background: rgba(59,51,54,.34); z-index: 199;
+    opacity: 0; pointer-events: none; transition: opacity .28s ease;
+  }
+  .scrim.open { opacity: 1; pointer-events: auto; }
+
+  .drawer {
+    position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
+    width: min(470px, 100%); background: var(--panel);
+    border-left: 1px solid var(--line-strong);
+    box-shadow: -10px 0 44px rgba(89,62,68,.16);
+    display: flex; flex-direction: column;
+    transform: translateX(100%); visibility: hidden;
+    transition: transform .28s cubic-bezier(.4,0,.2,1), visibility 0s linear .28s;
+  }
+  .drawer.open { transform: none; visibility: visible; transition-delay: 0s; }
+  @media (prefers-reduced-motion: reduce) {
+    .drawer, .scrim { transition-duration: .01ms; }
+  }
+
+  .drawer-head {
+    display: flex; align-items: center; gap: 12px;
+    padding: 16px 18px; border-bottom: 1px solid var(--line);
+    flex: 0 0 auto;
+  }
+  .drawer-head h2 {
+    font-family: "Simply Playful", ui-rounded, "Trebuchet MS", sans-serif;
+    font-size: 22px; font-weight: 400; margin: 0; flex: 1 1 auto; letter-spacing: .01em;
+  }
+  .icon-btn {
+    appearance: none; background: none; border: 1px solid transparent; cursor: pointer;
+    font-size: 20px; line-height: 1; color: var(--ink-soft);
+    width: 32px; height: 32px; border-radius: 8px; flex: 0 0 auto;
+  }
+  .icon-btn:hover { background: var(--bg); color: var(--ink); }
+  .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .drawer-body { flex: 1 1 auto; overflow-y: auto; padding: 18px; }
+  .drawer-foot {
+    flex: 0 0 auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 14px 18px; border-top: 1px solid var(--line-strong); background: var(--panel);
+  }
+
+  .drawer label {
+    display: block; font-size: 10.5px; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--ink-faint); font-weight: 600; margin-bottom: 4px;
+  }
+  .drawer input, .drawer select {
+    font: inherit; font-size: 13.5px; color: var(--ink); background: var(--bg); width: 100%;
+    border: 1px solid var(--line-strong); border-radius: 8px; padding: 7px 9px;
+  }
+  .drawer input:focus, .drawer select:focus {
+    outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent);
+  }
+  .drawer .row { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .drawer .row > div { flex: 1 1 130px; min-width: 0; }
+
+  .drawer button.primary {
+    background: var(--accent); color: #fff; border: 0; border-radius: 9px;
+    font: inherit; font-size: 14px; font-weight: 500; padding: 9px 16px; cursor: pointer;
+  }
+  .drawer button.primary:disabled { opacity: .55; cursor: default; }
+  .drawer button.ghost {
+    background: var(--panel); border: 1px solid var(--line-strong); color: var(--ink-soft);
+    font: inherit; font-size: 12.5px; padding: 6px 11px; border-radius: 8px; cursor: pointer;
+  }
+  .drawer button.ghost:hover { border-color: var(--accent); color: var(--ink); }
+  .drawer button.danger {
+    background: none; border: 0; color: var(--today); font: inherit; font-size: 12px;
+    cursor: pointer; padding: 4px 6px;
+  }
+  .drawer button.danger:hover { text-decoration: underline; }
+
+  /* collapsible entry */
+  .ev { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: var(--panel); }
+  .ev > summary {
+    list-style: none; cursor: pointer; padding: 10px 12px;
+    display: flex; align-items: center; gap: 9px;
+  }
+  .ev > summary::-webkit-details-marker { display: none; }
+  .ev > summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 10px; }
+  .ev > summary:hover { background: var(--bg); border-radius: 10px; }
+  .ev[open] > summary { border-bottom: 1px solid var(--line); border-radius: 10px 10px 0 0; }
+  .ev .chev { flex: 0 0 auto; color: var(--ink-faint); font-size: 11px; transition: transform .15s; }
+  .ev[open] .chev { transform: rotate(90deg); }
+  .ev .dot { flex: 0 0 auto; width: 9px; height: 9px; border-radius: 50%; }
+  .ev .name { flex: 1 1 auto; font-size: 13.5px; font-weight: 600; min-width: 0;
+              overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .ev .when { flex: 0 0 auto; font-size: 11.5px; color: var(--ink-faint); }
+  .ev-body { padding: 12px; }
+
+  .opt { border-left: 3px solid var(--line-strong); padding: 8px 0 8px 10px; margin: 10px 0; }
+  .opt h4 { margin: 0 0 7px; font-size: 12px; font-weight: 600; }
+  .span-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 7px; }
+  .span-row > div { flex: 1 1 110px; }
+
+  .msg { font-size: 12.5px; }
+  .msg.err { color: var(--today); }
+  .msg.ok { color: var(--work); }
+  .drawer .hint { font-size: 11.5px; color: var(--ink-faint); margin-top: 8px; }
+
   /* ---- legend + lists ---- */
   .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 14px 2px 0; font-size: 12px; color: var(--ink-soft); }
   .legend span { display: inline-flex; align-items: center; gap: 6px; }
@@ -342,9 +449,20 @@
 
   <footer>
     <span id="freshness">Showing the dates built into this page.</span>
-    <a href="admin.html" style="color:inherit">Edit dates</a>
+    <button class="edit-link" id="open-editor">Edit dates</button>
   </footer>
 </div>
+
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+  <div class="drawer-head">
+    <h2 id="drawer-title">Edit dates</h2>
+    <button class="icon-btn" id="close-editor" aria-label="Close editor">&times;</button>
+  </div>
+  <div class="drawer-body" id="drawer-body"></div>
+  <div class="drawer-foot" id="drawer-foot"></div>
+</aside>
 
 <div class="tip" id="tip"></div>
 
@@ -963,6 +1081,286 @@ fetch(`${API}/api/data`, { cache: "no-store" })
     }
   })
   .catch(() => { /* offline or Worker asleep - keep the seed */ });
+
+
+/* ================= edit drawer ================= */
+
+const CATS = [["baby","Baby"],["visit","Nida & Rae"],["edwina","Edwina"],
+              ["loretta","Loretta"],["work","Work & leave"],["family","Family"]];
+
+let token = sessionStorage.getItem("bt_token") || "";
+let draft = null;                 // edits happen on a copy, so cancelling is safe
+let lastFocus = null;
+
+const $ = (id) => document.getElementById(id);
+const elm = (tag, props = {}, kids = []) => {
+  const n = Object.assign(document.createElement(tag), props);
+  for (const k of [].concat(kids)) if (k) n.append(k);
+  return n;
+};
+function say(node, text, kind) { if (node) { node.textContent = text; node.className = "msg" + (kind ? " " + kind : ""); } }
+
+/* ---- open / close ---- */
+
+function openEditor() {
+  lastFocus = document.activeElement;
+  $("drawer").classList.add("open");
+  $("scrim").classList.add("open");
+  document.body.style.overflow = "hidden";
+  (token ? loadEditor() : showLogin());
+}
+function closeEditor() {
+  $("drawer").classList.remove("open");
+  $("scrim").classList.remove("open");
+  document.body.style.overflow = "";
+  if (lastFocus) lastFocus.focus();
+}
+$("open-editor").addEventListener("click", openEditor);
+$("close-editor").addEventListener("click", closeEditor);
+$("scrim").addEventListener("click", closeEditor);
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape" && $("drawer").classList.contains("open")) closeEditor();
+});
+if (location.hash === "#edit") openEditor();
+
+/* ---- login ---- */
+
+function showLogin() {
+  const body = $("drawer-body"), foot = $("drawer-foot");
+  foot.textContent = "";
+  body.textContent = "";
+  const pw = elm("input", { type: "password", id: "pw", autocomplete: "current-password" });
+  const msg = elm("span", { className: "msg" });
+  const form = elm("form", {}, [
+    elm("label", { textContent: "Password", htmlFor: "pw" }),
+    pw,
+    elm("div", { style: "margin-top:14px;display:flex;align-items:center;gap:12px" },
+      [elm("button", { className: "primary", type: "submit", textContent: "Sign in" }), msg]),
+    elm("p", { className: "hint", textContent: "Changes show on the timeline as soon as you save." }),
+  ]);
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    say(msg, "Checking…");
+    try {
+      const r = await fetch(`${API}/api/login`, {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pw.value }),
+      });
+      const b = await r.json();
+      if (!r.ok) return say(msg, b.error || "Sign-in failed.", "err");
+      token = b.token;
+      sessionStorage.setItem("bt_token", token);
+      pw.value = "";
+      loadEditor();
+    } catch { say(msg, "Can't reach the server.", "err"); }
+  });
+  body.append(form);
+  pw.focus();
+}
+
+/* ---- editor ---- */
+
+async function loadEditor() {
+  const body = $("drawer-body");
+  body.textContent = "Loading…";
+  try {
+    const r = await fetch(`${API}/api/data`, { cache: "no-store" });
+    draft = await r.json();
+  } catch {
+    draft = JSON.parse(JSON.stringify(DATA));
+  }
+  drawEditor();
+}
+
+function summarise(ev) {
+  if (ev.date) return fmt(d(ev.date));
+  if (ev.start) return `${fmt(d(ev.start))} – ${fmt(d(ev.end))}`;
+  if (ev.options) return `${ev.options.length} options`;
+  return "";
+}
+
+function field(labelText, value, oninput, type = "text") {
+  const input = elm("input", { type, value: value ?? "" });
+  input.addEventListener("input", () => oninput(input.value));
+  return elm("div", {}, [elm("label", { textContent: labelText }), input]);
+}
+
+function spanRow(span, onRemove, canRemove, onChange) {
+  const row = elm("div", { className: "span-row" });
+  row.append(
+    field("From", span.start, (v) => { span.start = v; onChange(); }, "date"),
+    field("To", span.end, (v) => { span.end = v; onChange(); }, "date"),
+  );
+  if (canRemove) {
+    const b = elm("button", { className: "danger", type: "button", textContent: "Remove" });
+    b.addEventListener("click", onRemove);
+    row.append(b);
+  }
+  return row;
+}
+
+function drawEditor() {
+  const body = $("drawer-body"), foot = $("drawer-foot");
+  body.textContent = "";
+
+  if (draft.updatedAt) {
+    body.append(elm("p", { className: "hint", style: "margin:0 0 12px",
+      textContent: `Last saved ${new Date(draft.updatedAt).toLocaleString("en-US",
+        { month:"short", day:"numeric", hour:"numeric", minute:"2-digit" })}.` }));
+  }
+
+  const leave = elm("div", { className: "row" });
+  leave.append(
+    field("Cheryle's leave from", draft.cheryleLeave.start, (v) => (draft.cheryleLeave.start = v), "date"),
+    field("to", draft.cheryleLeave.end, (v) => (draft.cheryleLeave.end = v), "date"));
+  body.append(leave);
+
+  body.append(elm("h3", { textContent: "Timeline entries",
+    style: "font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);margin:18px 0 8px" }));
+  const list = elm("div", { id: "ev-list" });
+  draft.events.forEach((ev, i) => list.append(eventCard(ev, i)));
+  body.append(list);
+
+  const addEv = elm("button", { className: "ghost", type: "button", textContent: "+ Add an entry" });
+  addEv.addEventListener("click", () => {
+    draft.events.push({ id: `e-${Date.now().toString(36)}`, label: "New entry", cat: "baby", start: "", end: "" });
+    drawEditor();
+    const last = $("ev-list").lastElementChild;
+    last.open = true;
+    last.scrollIntoView({ block: "center" });
+    last.querySelector("input").focus();
+  });
+  body.append(addEv);
+
+  body.append(elm("h3", { textContent: "Still to be decided",
+    style: "font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);margin:20px 0 8px" }));
+  const tbdList = elm("div", { id: "tbd-list" });
+  (draft.tbd = draft.tbd || []).forEach((t, i) => {
+    const row = elm("div", { className: "row" });
+    row.append(field("What", t.what, (v) => (t.what = v)));
+    const del = elm("button", { className: "danger", type: "button", textContent: "Remove" });
+    del.addEventListener("click", () => { draft.tbd.splice(i, 1); drawEditor(); });
+    row.append(elm("div", { style: "flex:0 0 auto" }, [elm("label", { innerHTML: "&nbsp;" }), del]));
+    tbdList.append(row);
+  });
+  body.append(tbdList);
+  const addTbd = elm("button", { className: "ghost", type: "button", textContent: "+ Add one" });
+  addTbd.addEventListener("click", () => { draft.tbd.push({ what: "" }); drawEditor(); });
+  body.append(addTbd);
+
+  foot.textContent = "";
+  const save = elm("button", { className: "primary", type: "button", textContent: "Save changes" });
+  const msg = elm("span", { className: "msg" });
+  save.addEventListener("click", () => doSave(save, msg));
+  foot.append(save, msg);
+}
+
+function eventCard(ev, i) {
+  const card = elm("details", { className: "ev" });     // collapsed unless .open is set
+  const dot = elm("span", { className: "dot" });
+  dot.style.background = `var(${CAT[ev.cat] ? CAT[ev.cat].slice(4, -1) : "--ink-faint"})`;
+  const name = elm("span", { className: "name", textContent: ev.label || "(untitled)" });
+  const when = elm("span", { className: "when", textContent: summarise(ev) });
+  card.append(elm("summary", {}, [elm("span", { className: "chev", textContent: "▶" }), dot, name, when]));
+
+  const refresh = () => { when.textContent = summarise(ev); };
+  const box = elm("div", { className: "ev-body" });
+
+  const r1 = elm("div", { className: "row" });
+  r1.append(field("Name", ev.label, (v) => { ev.label = v; name.textContent = v || "(untitled)"; }));
+  r1.append(field("Small print", ev.sub, (v) => (ev.sub = v || undefined)));
+  box.append(r1);
+
+  const sel = elm("select");
+  for (const [val, text] of CATS) sel.append(elm("option", { value: val, textContent: text, selected: ev.cat === val }));
+  sel.addEventListener("change", () => {
+    ev.cat = sel.value;
+    dot.style.background = `var(${CAT[ev.cat].slice(4, -1)})`;
+  });
+  const r2 = elm("div", { className: "row" }, [elm("div", {}, [elm("label", { textContent: "Colour" }), sel])]);
+
+  if (ev.options) {
+    box.append(r2);
+    ev.options.forEach((opt) => {
+      const ob = elm("div", { className: "opt" });
+      ob.append(elm("h4", { textContent: `Option ${opt.n}` }));
+      const orow = elm("div", { className: "row" });
+      orow.append(field("Option name", opt.label, (v) => (opt.label = v)));
+      if (opt.spans.length > 1) orow.append(field("Gap label", opt.gapLabel, (v) => (opt.gapLabel = v || undefined)));
+      ob.append(orow);
+      opt.spans.forEach((sp, si) => ob.append(spanRow(sp,
+        () => { opt.spans.splice(si, 1); redrawKeepingOpen(); }, opt.spans.length > 1, refresh)));
+      const add = elm("button", { className: "ghost", type: "button", textContent: "+ Add another stretch" });
+      add.addEventListener("click", () => { opt.spans.push({ start: "", end: "" }); redrawKeepingOpen(); });
+      ob.append(add);
+      box.append(ob);
+    });
+  } else if (ev.date) {
+    r2.append(field("Date", ev.date, (v) => { ev.date = v; refresh(); }, "date"));
+    box.append(r2);
+  } else {
+    r2.append(field("From", ev.start, (v) => { ev.start = v; refresh(); }, "date"),
+              field("To", ev.end, (v) => { ev.end = v; refresh(); }, "date"));
+    box.append(r2);
+  }
+
+  const tools = elm("div", { style: "display:flex;gap:8px;align-items:center;margin-top:10px" });
+  const up = elm("button", { className: "ghost", type: "button", textContent: "↑ Move up" });
+  const down = elm("button", { className: "ghost", type: "button", textContent: "↓ Move down" });
+  const del = elm("button", { className: "danger", type: "button", textContent: "Delete" });
+  up.addEventListener("click", () => { if (i > 0) { [draft.events[i-1], draft.events[i]] = [draft.events[i], draft.events[i-1]]; redrawKeepingOpen(); } });
+  down.addEventListener("click", () => { if (i < draft.events.length-1) { [draft.events[i+1], draft.events[i]] = [draft.events[i], draft.events[i+1]]; redrawKeepingOpen(); } });
+  del.addEventListener("click", () => {
+    if (confirm(`Delete "${ev.label}"? This takes effect when you save.`)) { draft.events.splice(i, 1); drawEditor(); }
+  });
+  tools.append(up, down, del);
+  box.append(tools);
+
+  card.append(box);
+  return card;
+}
+
+/* keep whichever entries were expanded expanded across a redraw */
+function redrawKeepingOpen() {
+  const open = [...document.querySelectorAll("#ev-list .ev")].map((c) => c.open);
+  drawEditor();
+  [...document.querySelectorAll("#ev-list .ev")].forEach((c, i) => { if (open[i]) c.open = true; });
+}
+
+/* ---- save ---- */
+
+async function doSave(btn, msg) {
+  btn.disabled = true;
+  say(msg, "Saving…");
+  try {
+    const r = await fetch(`${API}/api/data`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(draft),
+    });
+    const b = await r.json();
+    if (r.status === 401) {
+      token = ""; sessionStorage.removeItem("bt_token");
+      say(msg, "Session expired — sign in again.", "err");
+      setTimeout(showLogin, 1200);
+    } else if (!r.ok) {
+      say(msg, b.error || "Save failed.", "err");
+    } else {
+      draft.updatedAt = b.updatedAt;
+      applyData(JSON.parse(JSON.stringify(draft)));   // timeline behind updates at once
+      const note = $("freshness");
+      if (note) note.textContent = `Dates last edited ${new Date(b.updatedAt).toLocaleDateString("en-US",
+        { month: "short", day: "numeric", year: "numeric" })}.`;
+      say(msg, "Saved.", "ok");
+      setTimeout(() => say(msg, ""), 3000);
+    }
+  } catch {
+    say(msg, "Can't reach the server.", "err");
+  } finally {
+    btn.disabled = false;
+  }
+}
+
 </script>
 </body>
 </html>
