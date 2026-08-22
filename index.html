@@ -1,0 +1,772 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Family logistics: reachable by link, but kept out of search results. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Baby Heard Timeline</title>
+<style>
+  :root {
+    --bg: #fdf8f4;
+    --panel: #ffffff;
+    --ink: #3b3336;
+    --ink-soft: #7d7378;
+    --ink-faint: #aaa0a4;
+    --line: #f0e7e3;
+    --line-strong: #ded1cd;
+    --accent: #d4818b;
+    --baby: #d4818b;
+    --visit: #7ea8c4;
+    --work: #8fb59a;
+    --family: #e0a566;
+    --today: #e0705f;
+    --band: rgba(212,129,139,.035);
+    --wood: #c9a582;
+    --hero-a: #fceff1;
+    --hero-b: #f6f1e9;
+    --shadow: 0 1px 2px rgba(89,62,68,.05), 0 8px 24px rgba(89,62,68,.06);
+    --radius: 14px;
+  }
+
+  /* Dark palette. The viewer has three states: an explicit light/dark choice stamps
+     data-theme on <html>, while the default "system" setting stamps nothing and leaves
+     only prefers-color-scheme. The two blocks below must stay in sync. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1b1618;
+      --panel: #262023;
+      --ink: #f3eaec;
+      --ink-soft: #b2a5a9;
+      --ink-faint: #7f7378;
+      --line: #352d31;
+      --line-strong: #493e43;
+      --accent: #eda3ab;
+      --baby: #eda3ab;
+      --visit: #9cc4dd;
+      --work: #a8ccb2;
+      --family: #f0bd82;
+      --today: #f28775;
+      --band: rgba(237,163,171,.05);
+      --wood: #c69b76;
+      --hero-a: #2c2226;
+      --hero-b: #23262b;
+      --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.32);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1b1618;
+    --panel: #262023;
+    --ink: #f3eaec;
+    --ink-soft: #b2a5a9;
+    --ink-faint: #7f7378;
+    --line: #352d31;
+    --line-strong: #493e43;
+    --accent: #eda3ab;
+    --baby: #eda3ab;
+    --visit: #9cc4dd;
+    --work: #a8ccb2;
+    --family: #f0bd82;
+    --today: #f28775;
+    --band: rgba(237,163,171,.05);
+    --wood: #c69b76;
+    --hero-a: #2c2226;
+    --hero-b: #23262b;
+    --shadow: 0 1px 2px rgba(0,0,0,.3), 0 8px 24px rgba(0,0,0,.32);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 15px/1.5 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 20px 64px; }
+
+  header.top { margin-bottom: 28px; }
+  h1 { font-size: 30px; line-height: 1.15; margin: 0 0 6px; font-weight: 600; letter-spacing: -.02em; }
+  .sub { color: var(--ink-soft); font-size: 14px; margin: 0; }
+
+  .hero {
+    display: flex; align-items: center; justify-content: space-between; gap: 24px;
+    background: linear-gradient(115deg, var(--hero-a), var(--hero-b));
+    border: 1px solid var(--line); border-radius: 20px;
+    padding: 24px 12px 24px 28px; box-shadow: var(--shadow);
+  }
+  .hero-copy { min-width: 0; }
+  .crib { flex: 0 1 260px; max-width: 260px; min-width: 150px; line-height: 0; }
+  .crib svg { width: 100%; height: auto; overflow: visible; }
+
+  .countdown { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+  .stat {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 12px 16px; min-width: 128px;
+    box-shadow: var(--shadow);
+  }
+  .stat .n { font-size: 24px; font-weight: 600; letter-spacing: -.02em; line-height: 1.1; }
+  .stat .n.hl { color: var(--accent); }
+  .stat .l { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint); margin-top: 4px; }
+
+  /* ---- control blocks ---- */
+  .controls {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); padding: 16px 18px; margin: 20px 0 0;
+    box-shadow: var(--shadow);
+  }
+  .controls + .controls { margin-top: 12px; }
+  .controls:last-of-type { margin-bottom: 20px; }
+  .block-title {
+    font-size: 13px; font-weight: 600; margin: 0 0 2px; letter-spacing: -.01em;
+  }
+  .block-note { font-size: 12px; color: var(--ink-faint); margin: 0 0 14px; }
+  .block-body { display: flex; flex-wrap: wrap; gap: 22px 32px; align-items: flex-start; }
+  .ctl-group { min-width: 210px; flex: 1 1 280px; }
+  .ctl-label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .07em;
+    color: var(--ink-faint); margin-bottom: 8px; font-weight: 600;
+  }
+  .seg { display: inline-flex; background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 2px; gap: 2px; }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: var(--ink-soft);
+    font: inherit; font-size: 13px; padding: 6px 12px; border-radius: 7px; cursor: pointer;
+    white-space: nowrap; transition: background .12s, color .12s;
+  }
+  .seg button:hover { color: var(--ink); }
+  .seg button[aria-pressed="true"] { background: var(--panel); color: var(--ink); box-shadow: 0 1px 2px rgba(0,0,0,.08); font-weight: 500; }
+  .opt-detail { font-size: 12px; color: var(--ink-faint); margin-top: 8px; min-height: 17px; }
+  .opt-detail .warn { color: var(--today); }
+  .opt-detail .good { color: var(--work); }
+  .opt-detail .line2 { display: block; margin-top: 2px; }
+
+  /* ---- chart ---- */
+  .chart-card {
+    background: var(--panel); border: 1px solid var(--line);
+    border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden;
+  }
+  .scroller { overflow-x: auto; }
+  .chart { min-width: 1000px; position: relative; }
+
+  .row { display: flex; align-items: stretch; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: 0; }
+  .row.head { border-bottom: 1px solid var(--line-strong); background: var(--panel); position: sticky; top: 0; z-index: 6; }
+
+  .lab {
+    flex: 0 0 250px; width: 250px; padding: 10px 14px;
+    position: sticky; left: 0; z-index: 5; background: var(--panel);
+    border-right: 1px solid var(--line-strong);
+    font-size: 13px; line-height: 1.35;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .lab .dot { flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; }
+  .lab.child { padding-left: 30px; color: var(--ink-soft); font-size: 12.5px; }
+  .lab .sub2 { color: var(--ink-faint); font-size: 11px; display: block; }
+
+  .track { position: relative; flex: 1 1 auto; min-height: 40px; }
+
+  .grid-line, .month-band, .mo-head, .today-line, .today-flag,
+  .ms-label, .bar-out, .connector, .connector-label { pointer-events: none; }
+
+  .grid-line { position: absolute; top: 0; bottom: 0; width: 1px; background: var(--line); }
+  .grid-line.month { background: var(--line-strong); }
+  .month-band { position: absolute; top: 0; bottom: 0; background: var(--band); }
+
+  .mo-head { position: absolute; top: 0; height: 100%; display: flex; align-items: center; padding-left: 8px;
+    font-size: 12px; font-weight: 600; letter-spacing: .02em; color: var(--ink-soft); }
+  .row.head .track { min-height: 38px; }
+  .row.head .lab { font-size: 11px; text-transform: uppercase; letter-spacing: .07em; color: var(--ink-faint); font-weight: 600; }
+
+  .today-line { position: absolute; top: 0; bottom: 0; width: 2px; background: var(--today); z-index: 4; opacity: .85; }
+  .today-flag {
+    position: absolute; top: 6px; transform: translateX(-50%); z-index: 7;
+    background: var(--today); color: #fff; font-size: 10px; font-weight: 600;
+    padding: 2px 7px; border-radius: 999px; letter-spacing: .04em; white-space: nowrap;
+  }
+
+  .bar {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    height: 22px; border-radius: 6px; z-index: 2;
+    display: flex; align-items: center; padding: 0 8px;
+    font-size: 11px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden;
+    cursor: help;
+  }
+  .bar.ghost {
+    border: 1px dashed currentColor; background: transparent !important;
+    font-weight: 500;
+  }
+  .bar.ghost::before { content:""; position:absolute; inset:0; border-radius:5px; background:currentColor; opacity:.14; }
+  .bar.parent { height: 12px; border-radius: 4px; opacity: .5; }
+  .bar-out {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--ink-soft); white-space: nowrap; z-index: 3; padding-left: 6px;
+  }
+
+  /* dashed link between the two halves of a split leave */
+  .connector {
+    position: absolute; top: 50%; height: 0; z-index: 1;
+    border-top: 1px dashed var(--line-strong);
+  }
+  .connector-label {
+    position: absolute; top: 50%; transform: translate(-50%, -50%); z-index: 2;
+    background: var(--panel); padding: 0 6px; font-size: 10.5px; color: var(--ink-faint);
+    white-space: nowrap;
+  }
+
+  .diamond {
+    position: absolute; top: 50%; width: 11px; height: 11px; z-index: 3;
+    transform: translate(-50%, -50%) rotate(45deg); border-radius: 2px; cursor: help;
+  }
+  .ms-label {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 11px; color: var(--ink-soft); white-space: nowrap; z-index: 3;
+  }
+
+  .conflict-band {
+    position: absolute; top: 0; bottom: 0; z-index: 1; cursor: help;
+    background: repeating-linear-gradient(45deg, rgba(224,112,95,.16) 0 5px, transparent 5px 10px);
+    border-left: 1px solid rgba(224,112,95,.4); border-right: 1px solid rgba(224,112,95,.4);
+  }
+  .conflict-band.tentative {
+    background: repeating-linear-gradient(45deg, rgba(224,112,95,.09) 0 5px, transparent 5px 10px);
+    border-left: 1px dashed rgba(224,112,95,.35); border-right: 1px dashed rgba(224,112,95,.35);
+  }
+  .conflict-band:hover { background: repeating-linear-gradient(45deg, rgba(224,112,95,.3) 0 5px, rgba(224,112,95,.07) 5px 10px); }
+
+  /* ---- tooltip ---- */
+  .tip {
+    position: fixed; z-index: 999; pointer-events: none; opacity: 0;
+    transition: opacity .1s; max-width: 300px;
+    background: var(--panel); color: var(--ink);
+    border: 1px solid var(--line-strong); border-radius: 10px;
+    padding: 9px 12px; box-shadow: 0 4px 18px rgba(0,0,0,.16);
+    font-size: 12.5px; line-height: 1.45;
+  }
+  .tip.on { opacity: 1; }
+  .tip .t-title { font-weight: 600; margin-bottom: 3px; }
+  .tip .t-row { color: var(--ink-soft); }
+  .tip .t-row b { color: var(--ink); font-weight: 600; }
+  .tip .t-tag {
+    display: inline-block; margin-top: 5px; font-size: 10.5px; letter-spacing: .05em;
+    text-transform: uppercase; color: var(--today); font-weight: 600;
+  }
+
+  /* ---- legend + lists ---- */
+  .legend { display: flex; flex-wrap: wrap; gap: 16px; margin: 14px 2px 0; font-size: 12px; color: var(--ink-soft); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .sw.dia { transform: rotate(45deg); border-radius: 2px; }
+
+  h2 { font-size: 15px; font-weight: 600; margin: 36px 0 12px; letter-spacing: -.01em; }
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+    padding: 13px 15px; box-shadow: var(--shadow);
+  }
+  .card .when { font-size: 12px; color: var(--ink-faint); margin-bottom: 3px; letter-spacing: .01em; }
+  .card .what { font-size: 14px; font-weight: 500; }
+  .card .rel { font-size: 12px; color: var(--ink-soft); margin-top: 4px; }
+  .card.tbd .what { color: var(--ink-soft); font-weight: 400; }
+
+  footer { margin-top: 44px; font-size: 12px; color: var(--ink-faint); }
+
+  @media (max-width: 620px) {
+    .wrap { padding: 22px 14px 48px; }
+    h1 { font-size: 24px; }
+    .lab { flex-basis: 170px; width: 170px; }
+    .hero { flex-direction: column-reverse; align-items: flex-start; padding: 20px; gap: 12px; }
+    .crib { flex: 0 0 auto; align-self: center; width: 210px; max-width: 70%; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <div class="hero">
+      <div class="hero-copy">
+        <h1>Baby Heard Timeline</h1>
+        <p class="sub">Due dates, leave, and family visits — Aug 2026 through Apr 2027.</p>
+      </div>
+      <div class="crib" aria-hidden="true">
+      <svg viewBox="0 0 270 200" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="140" cy="122" r="86" fill="var(--baby)" opacity=".10"/>
+        <g fill="none" stroke="var(--wood)" stroke-width="4" stroke-linecap="round">
+          <path d="M40 62 V34 Q40 20 56 20 H152"/>
+        </g>
+        <g stroke="var(--wood)" stroke-width="1.6" opacity=".75">
+          <line x1="86" y1="20" x2="86" y2="42"/>
+          <line x1="114" y1="20" x2="114" y2="50"/>
+          <line x1="142" y1="20" x2="142" y2="38"/>
+        </g>
+        <path d="M86 42 l2.4 5 5.4.8 -3.9 3.8.9 5.4 -4.8-2.5 -4.8 2.5.9-5.4 -3.9-3.8 5.4-.8z" fill="var(--family)"/>
+        <path d="M114 64 c-7-6.4-10.4-10.6-6.6-14.2 2.6-2.4 5.4-1 6.6 1.2 1.2-2.2 4-3.6 6.6-1.2 3.8 3.6.4 7.8-6.6 14.2z" fill="var(--baby)"/>
+        <path d="M142 31 a8 8 0 1 0 0 15.4 A6.3 6.3 0 1 1 142 31z" fill="var(--visit)"/>
+        <g fill="var(--wood)">
+          <rect x="32" y="60" width="9" height="112" rx="4.5"/>
+          <rect x="229" y="72" width="9" height="100" rx="4.5"/>
+          <rect x="32" y="72" width="206" height="8" rx="4"/>
+          <rect x="32" y="140" width="206" height="8" rx="4"/>
+          <rect x="26" y="166" width="21" height="9" rx="4.5"/>
+          <rect x="223" y="166" width="21" height="9" rx="4.5"/>
+        </g>
+        <g fill="var(--wood)" opacity=".85">
+          <rect x="57" y="79" width="5.5" height="62" rx="2.75"/>
+          <rect x="82" y="79" width="5.5" height="62" rx="2.75"/>
+          <rect x="107" y="79" width="5.5" height="62" rx="2.75"/>
+          <rect x="132" y="79" width="5.5" height="62" rx="2.75"/>
+          <rect x="157" y="79" width="5.5" height="62" rx="2.75"/>
+          <rect x="182" y="79" width="5.5" height="62" rx="2.75"/>
+          <rect x="207" y="79" width="5.5" height="62" rx="2.75"/>
+        </g>
+        <rect x="41" y="116" width="188" height="28" rx="8" fill="var(--panel)" stroke="var(--wood)" stroke-width="2"/>
+        <path d="M128 116 H221 a8 8 0 0 1 8 8 v12 a8 8 0 0 1-8 8 H128z" fill="var(--baby)" opacity=".9"/>
+        <path d="M128 116 v28" stroke="var(--panel)" stroke-width="2.5" opacity=".7"/>
+        <path d="M139 122 h78 M139 130 h78" stroke="var(--panel)" stroke-width="2" opacity=".45" stroke-linecap="round"/>
+        <rect x="55" y="106" width="52" height="22" rx="11" fill="var(--panel)" stroke="var(--wood)" stroke-width="2"/>
+      </svg>
+    </div>
+    </div>
+    <div class="countdown" id="stats"></div>
+  </header>
+
+  <section class="controls">
+    <p class="block-title">Parental leave</p>
+    <p class="block-note" id="leave-note"></p>
+    <div class="block-body" id="leave-controls"></div>
+  </section>
+
+  <section class="controls">
+    <p class="block-title">Family visits</p>
+    <p class="block-note">Two visits still have competing windows. Compare shows both candidates at once.</p>
+    <div class="block-body" id="visit-controls"></div>
+  </section>
+
+  <div class="chart-card">
+    <div class="scroller">
+      <div class="chart" id="chart"></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="sw" style="background:var(--baby)"></i> Baby</span>
+    <span><i class="sw" style="background:var(--visit)"></i> Visitors</span>
+    <span><i class="sw" style="background:var(--work)"></i> Work &amp; leave</span>
+    <span><i class="sw" style="background:var(--family)"></i> Family</span>
+    <span><i class="sw dia" style="background:var(--ink-faint)"></i> Single-day milestone</span>
+    <span><i class="sw" style="background:repeating-linear-gradient(45deg,rgba(224,112,95,.7) 0 3px,transparent 3px 6px)"></i> Overlapping visitors — hover for dates</span>
+  </div>
+
+  <h2>What's next</h2>
+  <div class="cards" id="agenda"></div>
+
+  <h2>Still to be decided</h2>
+  <div class="cards" id="tbd"></div>
+
+  <footer>Data from the shared Google Sheet. Local file — nothing is sent anywhere.</footer>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+/* ---------------- data ---------------- */
+const CAT = { baby: 'var(--baby)', visit: 'var(--visit)', work: 'var(--work)', family: 'var(--family)' };
+
+const CHERYLE_LEAVE = { start: '2026-09-26', end: '2027-02-01' };
+
+const EVENTS = [
+  { id:'duezone',  label:'Due zone', sub:'37–40 weeks', start:'2026-09-09', end:'2026-09-29', cat:'baby' },
+  { id:'due',      label:'Due date', date:'2026-09-30', cat:'baby' },
+
+  { id:'c-last',   label:"Cheryle's last day of work", date:'2026-09-25', cat:'work' },
+  { id:'m-last',   label:"Michael's last day of work", date:'2026-09-29', cat:'work' },
+
+  { id:'c-leave',  label:"Cheryle's maternity leave", start:CHERYLE_LEAVE.start, end:CHERYLE_LEAVE.end, cat:'work' },
+  { id:'m-leave',  label:"Michael's leave", group:'michael', cat:'work', options:[
+      { n:1, label:'Option 1 — split', spans:[
+          { start:'2026-09-29', end:'2026-12-01' },
+          { start:'2027-02-01', end:'2027-03-31' } ], gapLabel:'back at work' },
+      { n:2, label:'Option 2 — full time off', spans:[
+          { start:'2026-09-29', end:'2027-02-01' } ] } ] },
+
+  { id:'nida',     label:'Nida & Rae in the US', start:'2026-10-17', end:'2026-11-05', cat:'visit', parent:true, visitor:true },
+  { id:'nida-ny1', label:'New York — BellTel',   start:'2026-10-17', end:'2026-10-25', cat:'visit', child:true },
+  { id:'nida-va',  label:'Virginia',             start:'2026-10-25', end:'2026-11-03', cat:'visit', child:true },
+  { id:'nida-ny2', label:'New York — hotel',     start:'2026-11-03', end:'2026-11-05', cat:'visit', child:true },
+
+  { id:'edw',      label:'Edwina visits', group:'edwina', cat:'visit', visitor:true, options:[
+      { n:1, label:'Option 1', spans:[{ start:'2026-11-01', end:'2026-11-14' }] },
+      { n:2, label:'Option 2', spans:[{ start:'2026-10-03', end:'2026-10-17' }] } ] },
+  { id:'edw-bday', label:"Edwina's 70th birthday", date:'2026-10-17', cat:'family' },
+
+  { id:'lor',      label:'Loretta visits', group:'loretta', cat:'visit', visitor:true, options:[
+      { n:1, label:'Option 1 — pick up Manila unit', spans:[{ start:'2026-10-23', end:'2026-10-25' }] },
+      { n:2, label:'Option 2 — window',              spans:[{ start:'2026-10-04', end:'2026-10-18' }] } ] },
+
+  { id:'6mo',      label:'Baby is 6 months old', date:'2027-04-01', cat:'baby' }
+];
+
+const TBD = [
+  { what: 'June travel dates' },
+  { what: 'July travel dates' }
+];
+
+const SPAN_START = d('2026-08-01');
+const SPAN_END   = d('2027-04-30');
+
+/* ---------------- helpers ---------------- */
+function d(s){ const [y,m,dd] = s.split('-').map(Number); return new Date(y, m-1, dd); }
+const DAY = 86400000;
+function days(a,b){ return Math.round((b-a)/DAY); }
+const TOTAL = days(SPAN_START, SPAN_END) + 1;
+function pct(date){ return (days(SPAN_START, date) / TOTAL) * 100; }
+function fmt(dt){ return dt.toLocaleDateString('en-US', { month:'short', day:'numeric' }); }
+function fmtY(dt){ return dt.toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }); }
+function today(){ const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); }
+function len(a,b){ return days(a,b) + 1; }
+function rangeText(a,b){
+  const sameYear = a.getFullYear() === b.getFullYear();
+  return fmt(a) + ' – ' + (sameYear ? fmt(b) : fmtY(b)) + ' · ' + len(a,b) + ' days';
+}
+function overlaps(a1,a2,b1,b2){ return a1 <= b2 && b1 <= a2; }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;'); }
+
+/* ---------------- state ---------------- */
+const state = { michael: 1, edwina: 1, loretta: 1 };
+
+/* Every row is normalised to { spans:[{a,b}] } or { at: Date } */
+function normalise(e, extra){
+  const r = { ...e, options: null, ...extra };
+  if (e.date) { r.at = d(e.date); }
+  else if (r.rawSpans) { r.spans = r.rawSpans.map(s => ({ a: d(s.start), b: d(s.end) })); }
+  else { r.spans = [{ a: d(e.start), b: d(e.end) }]; }
+  return r;
+}
+
+function resolved(){
+  const out = [];
+  for (const e of EVENTS) {
+    if (!e.options) { out.push(normalise(e)); continue; }
+    const mode = state[e.group];
+    const chosen = mode === 'both' ? e.options : [e.options.find(o => o.n === mode)];
+    for (const o of chosen)
+      out.push(normalise(e, {
+        rawSpans: o.spans, sub: o.label, optN: o.n,
+        gapLabel: o.gapLabel, ghost: mode === 'both'
+      }));
+  }
+  return out;
+}
+
+/* ---------------- overlap detection ---------------- */
+/* Every visitor stay currently drawn, tentative ones included. */
+function visitorBlocks(){
+  const out = [];
+  for (const r of resolved()) {
+    if (!r.visitor || !r.spans) continue;
+    for (const s of r.spans)
+      out.push({ id:r.id, group:r.group || r.id, label:r.label,
+                 opt:r.sub, a:s.a, b:s.b, tentative: !!r.ghost });
+  }
+  return out;
+}
+
+function conflicts(){
+  const v = visitorBlocks(), out = [];
+  for (let i=0;i<v.length;i++) for (let j=i+1;j<v.length;j++) {
+    const x = v[i], y = v[j];
+    if (x.group === y.group) continue;              /* two options for one person aren't a clash */
+    if (!overlaps(x.a,x.b,y.a,y.b)) continue;
+    out.push({
+      a: new Date(Math.max(x.a, y.a)),
+      b: new Date(Math.min(x.b, y.b)),
+      pair: [x, y],
+      tentative: x.tentative || y.tentative
+    });
+  }
+  return out;
+}
+
+function conflictTip(c){
+  const who = c.pair.map(p => p.opt ? `${p.label} (${p.opt})` : p.label);
+  return {
+    title: who.join('  ×  '),
+    rows: [
+      `Overlap: <b>${fmt(c.a)} – ${fmtY(c.b)}</b>`,
+      `<b>${len(c.a, c.b)} day${len(c.a,c.b)===1?'':'s'}</b> with both here`,
+      ...c.pair.map(p => `${esc(p.label)}: ${fmt(p.a)} – ${fmt(p.b)}`)
+    ],
+    tag: c.tentative ? 'If you pick these options' : null
+  };
+}
+
+/* ---------------- leave maths ---------------- */
+function leaveOption(n){ return EVENTS.find(e => e.id === 'm-leave').options.find(o => o.n === n); }
+
+function leaveFacts(n){
+  const o = leaveOption(n);
+  const spans = o.spans.map(s => ({ a: d(s.start), b: d(s.end) }));
+  const total = spans.reduce((sum, s) => sum + len(s.a, s.b), 0);
+  const lastHome = new Date(Math.max(d(CHERYLE_LEAVE.end), spans[spans.length-1].b));
+  const gaps = [];
+  for (let i=1;i<spans.length;i++)
+    gaps.push({ a: new Date(spans[i-1].b.getTime()+DAY), b: new Date(spans[i].a.getTime()-DAY) });
+  return { o, spans, total, lastHome, gaps };
+}
+
+/* ---------------- chart scaffolding ---------------- */
+function monthSpans(){
+  const spans = [];
+  let cur = new Date(SPAN_START.getFullYear(), SPAN_START.getMonth(), 1);
+  while (cur <= SPAN_END) {
+    const next = new Date(cur.getFullYear(), cur.getMonth()+1, 1);
+    const from = cur < SPAN_START ? SPAN_START : cur;
+    const to   = next > SPAN_END ? new Date(SPAN_END.getTime()+DAY) : next;
+    spans.push({ date:new Date(cur), left:pct(from), width:pct(to)-pct(from), i:spans.length });
+    cur = next;
+  }
+  return spans;
+}
+
+function backdrop(cs){
+  let html = '';
+  for (const m of monthSpans()) {
+    if (m.i % 2 === 1) html += `<div class="month-band" style="left:${m.left}%;width:${m.width}%"></div>`;
+    html += `<div class="grid-line month" style="left:${m.left}%"></div>`;
+  }
+  cs.forEach((c, i) => {
+    const l = pct(c.a), w = pct(new Date(c.b.getTime()+DAY)) - l;
+    html += `<div class="conflict-band${c.tentative ? ' tentative' : ''}" data-c="${i}" style="left:${l}%;width:${w}%"></div>`;
+  });
+  const t = today();
+  if (t >= SPAN_START && t <= SPAN_END)
+    html += `<div class="today-line" style="left:${pct(t)}%"></div>`;
+  return html;
+}
+
+function renderChart(){
+  const rows = resolved(), cs = conflicts(), t = today();
+  const back = backdrop(cs);
+  let html = '';
+
+  html += `<div class="row head"><div class="lab">Timeline</div><div class="track">${back}`;
+  for (const m of monthSpans())
+    html += `<div class="mo-head" style="left:${m.left}%;width:${m.width}%">${m.date.toLocaleDateString('en-US',{month:'short'})}${m.date.getMonth()===0?" '27":''}</div>`;
+  if (t >= SPAN_START && t <= SPAN_END)
+    html += `<div class="today-flag" style="left:${pct(t)}%">TODAY</div>`;
+  html += `</div></div>`;
+
+  for (const r of rows) {
+    const color = CAT[r.cat];
+    let inner = '';
+
+    if (r.at) {
+      const l = pct(r.at) + (0.5 / TOTAL) * 100;
+      const away = days(t, r.at);
+      const tip = esc(JSON.stringify({
+        title: r.label,
+        rows: [`<b>${r.at.toLocaleDateString('en-US',{weekday:'long', month:'long', day:'numeric', year:'numeric'})}</b>`,
+               away > 0 ? `in ${away} days` : (away === 0 ? 'today' : `${-away} days ago`)],
+        tag: null
+      }));
+      inner = `<div class="diamond" data-tip="${tip}" style="left:${l}%;background:${color}"></div>`
+            + `<div class="ms-label" style="left:calc(${l}% + 12px)">${fmt(r.at)}</div>`;
+    } else {
+      /* dashed link across the gap in a split leave */
+      for (let i=1;i<r.spans.length;i++) {
+        const gl = pct(r.spans[i-1].b), gw = pct(r.spans[i].a) - gl;
+        inner += `<div class="connector" style="left:${gl}%;width:${gw}%"></div>`;
+        if (r.gapLabel && gw > 7)
+          inner += `<div class="connector-label" style="left:${gl + gw/2}%">${esc(r.gapLabel)}</div>`;
+      }
+      r.spans.forEach(s => {
+        const l = pct(s.a), w = pct(new Date(s.b.getTime()+DAY)) - l;
+        const cls = 'bar' + (r.ghost ? ' ghost' : '') + (r.parent ? ' parent' : '');
+        const inLabel = (!r.parent && w > 7) ? `${fmt(s.a)} – ${fmt(s.b)}` : '';
+        const tip = esc(JSON.stringify({
+          title: r.label + (r.sub ? ` · ${r.sub}` : ''),
+          rows: [`<b>${fmt(s.a)} – ${fmtY(s.b)}</b>`, `${len(s.a,s.b)} days`],
+          tag: r.ghost ? 'Not decided yet' : null
+        }));
+        const paint = r.ghost ? `color:${color}` : `background:${color}`;
+        inner += `<div class="${cls}" data-tip="${tip}" style="left:${l}%;width:${w}%;${paint}">${inLabel}</div>`;
+        if (!inLabel && !r.parent)
+          inner += `<div class="bar-out" style="left:${l+w}%">${fmt(s.a)} – ${fmt(s.b)}</div>`;
+      });
+    }
+
+    html += `<div class="row">
+      <div class="lab${r.child ? ' child' : ''}">
+        ${r.child ? '' : `<i class="dot" style="background:${color}"></i>`}
+        <span>${esc(r.label)}${r.sub ? `<span class="sub2">${esc(r.sub)}</span>` : ''}</span>
+      </div>
+      <div class="track">${back}${inner}</div>
+    </div>`;
+  }
+
+  const chart = document.getElementById('chart');
+  chart.innerHTML = html;
+  chart.__conflicts = cs;
+}
+
+/* ---------------- controls ---------------- */
+function segment(group, options, current){
+  let html = `<div class="seg" role="group">`;
+  for (const o of options)
+    html += `<button data-g="${group}" data-v="${o.n}" aria-pressed="${current===o.n}">Option ${o.n}</button>`;
+  html += `<button data-g="${group}" data-v="both" aria-pressed="${current==='both'}">Compare</button></div>`;
+  return html;
+}
+
+function leaveSummary(){
+  if (state.michael === 'both') return 'Showing both options side by side.';
+  const f = leaveFacts(state.michael);
+  const segs = f.spans.map(s => `${fmt(s.a)} – ${fmt(s.b)}`).join('  +  ');
+  let html = `${segs} · <b>${f.total} days</b> of leave`;
+  html += `<span class="line2">A parent is home until <span class="good">${fmtY(f.lastHome)}</span>`;
+  if (f.gaps.length) {
+    const g = f.gaps[0];
+    html += ` · back at work ${fmt(g.a)} – ${fmt(g.b)} (${len(g.a,g.b)} days, Cheryle still on leave)`;
+  } else {
+    html += ` · both return together`;
+  }
+  html += `</span>`;
+  return html;
+}
+
+function visitSummary(group){
+  const ev = EVENTS.find(e => e.group === group);
+  if (state[group] === 'both') return 'Showing both options side by side.';
+  const o = ev.options.find(x => x.n === state[group]);
+  const a = d(o.spans[0].start), b = d(o.spans[0].end);
+  const clash = conflicts().filter(c => c.pair.some(p => p.id === ev.id));
+  let s = rangeText(a,b);
+  if (clash.length) {
+    const c = clash[0], other = c.pair.find(p => p.id !== ev.id);
+    s += ` · <span class="warn">overlaps ${esc(other.label)} ${fmt(c.a)}–${fmt(c.b)}</span>`;
+  }
+  return s;
+}
+
+function renderControls(){
+  const mLeave = EVENTS.find(e => e.id === 'm-leave');
+  document.getElementById('leave-note').innerHTML =
+    `Cheryle's leave is fixed: <b>${fmt(d(CHERYLE_LEAVE.start))} – ${fmtY(d(CHERYLE_LEAVE.end))}</b> ` +
+    `(${len(d(CHERYLE_LEAVE.start), d(CHERYLE_LEAVE.end))} days). Michael's has two shapes.`;
+  document.getElementById('leave-controls').innerHTML =
+    `<div class="ctl-group" style="flex-basis:100%">
+       <div class="ctl-label">Michael's leave</div>
+       ${segment('michael', mLeave.options, state.michael)}
+       <div class="opt-detail">${leaveSummary()}</div>
+     </div>`;
+
+  let html = '';
+  for (const group of ['edwina','loretta']) {
+    const ev = EVENTS.find(e => e.group === group);
+    html += `<div class="ctl-group">
+      <div class="ctl-label">${esc(ev.label)}</div>
+      ${segment(group, ev.options, state[group])}
+      <div class="opt-detail">${visitSummary(group)}</div>
+    </div>`;
+  }
+  document.getElementById('visit-controls').innerHTML = html;
+
+  document.querySelectorAll('.controls button').forEach(b => b.addEventListener('click', () => {
+    const v = b.dataset.v;
+    state[b.dataset.g] = v === 'both' ? 'both' : Number(v);
+    render();
+  }));
+}
+
+/* ---------------- stats + lists ---------------- */
+function renderStats(){
+  const t = today(), due = d('2026-09-30');
+  const toDue = days(t, due);
+  const visitorDays = visitorBlocks().filter(v => !v.tentative)
+    .reduce((n,v) => n + len(v.a,v.b), 0);
+  const cs = conflicts().length;
+  const leaveDays = state.michael === 'both' ? '—' : leaveFacts(state.michael).total;
+
+  const items = [
+    { n: Math.abs(toDue), l: toDue > 0 ? 'days to due date' : 'days since due date', hl:true },
+    { n: Math.max(0, days(t, d('2026-09-09'))), l: 'days to the due zone' },
+    { n: leaveDays, l: "Michael's leave days" },
+    { n: visitorDays, l: 'visitor-days booked' },
+    { n: cs, l: cs === 1 ? 'visit overlap' : 'visit overlaps' }
+  ];
+  document.getElementById('stats').innerHTML = items.map(i =>
+    `<div class="stat"><div class="n${i.hl?' hl':''}">${i.n}</div><div class="l">${i.l}</div></div>`).join('');
+}
+
+function renderAgenda(){
+  const t = today();
+  const list = [];
+  for (const r of resolved()) {
+    if (r.at) list.push({ r, a: r.at, b: r.at });
+    else r.spans.forEach((s, i) => list.push({ r, a: s.a, b: s.b, part: r.spans.length > 1 ? i+1 : 0 }));
+  }
+  const upcoming = list.filter(x => x.b >= t).sort((x,y) => x.a - y.a);
+
+  document.getElementById('agenda').innerHTML = upcoming.map(({r,a,b,part}) => {
+    const away = days(t, a);
+    const rel = away > 0 ? `in ${away} day${away===1?'':'s'}` : 'happening now';
+    const when = r.at ? fmtY(a) : rangeText(a,b);
+    const style = r.ghost ? `border-left:3px dashed ${CAT[r.cat]};opacity:.72`
+                          : `border-left:3px solid ${CAT[r.cat]}`;
+    const tail = r.ghost ? `${rel} · not decided yet` : rel;
+    const name = esc(r.label) + (r.sub ? ' · ' + esc(r.sub) : '') + (part ? ` (part ${part})` : '');
+    return `<div class="card" style="${style}">
+      <div class="when">${when}</div>
+      <div class="what">${name}</div>
+      <div class="rel">${tail}</div></div>`;
+  }).join('');
+}
+
+function renderTbd(){
+  document.getElementById('tbd').innerHTML = TBD.map(x =>
+    `<div class="card tbd"><div class="when">Date not set</div>
+     <div class="what">${esc(x.what)}</div></div>`).join('');
+}
+
+/* ---------------- tooltip ---------------- */
+const tip = document.getElementById('tip');
+function showTip(data, ev){
+  tip.innerHTML = `<div class="t-title">${esc(data.title)}</div>`
+    + data.rows.map(r => `<div class="t-row">${r}</div>`).join('')
+    + (data.tag ? `<div class="t-tag">${esc(data.tag)}</div>` : '');
+  tip.classList.add('on');
+  moveTip(ev);
+}
+function moveTip(ev){
+  const pad = 14, r = tip.getBoundingClientRect();
+  let x = ev.clientX + pad, y = ev.clientY + pad;
+  if (x + r.width  > innerWidth  - 8) x = ev.clientX - r.width  - pad;
+  if (y + r.height > innerHeight - 8) y = ev.clientY - r.height - pad;
+  tip.style.left = Math.max(8, x) + 'px';
+  tip.style.top  = Math.max(8, y) + 'px';
+}
+function hideTip(){ tip.classList.remove('on'); }
+
+const chartEl = document.getElementById('chart');
+function tipDataFor(el){
+  if (el.dataset.c !== undefined) return conflictTip(chartEl.__conflicts[+el.dataset.c]);
+  if (el.dataset.tip) return JSON.parse(el.dataset.tip);
+  return null;
+}
+chartEl.addEventListener('mouseover', e => {
+  const el = e.target.closest('.conflict-band, .bar, .diamond');
+  if (!el) return;
+  const data = tipDataFor(el);
+  if (data) showTip(data, e);
+});
+chartEl.addEventListener('mousemove', e => { if (tip.classList.contains('on')) moveTip(e); });
+chartEl.addEventListener('mouseout', e => {
+  if (!e.relatedTarget || !e.relatedTarget.closest || !e.relatedTarget.closest('.conflict-band, .bar, .diamond')) hideTip();
+});
+
+/* ---------------- go ---------------- */
+function render(){ renderControls(); renderChart(); renderStats(); renderAgenda(); renderTbd(); }
+render();
+</script>
+</body>
+</html>
