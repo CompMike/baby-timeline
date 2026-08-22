@@ -12,6 +12,8 @@
 import SEED from "../../v2/data.json";
 
 const KEY = "timeline";
+const HKEY = "history";
+const MAX_HISTORY = 20;
 const TOKEN_TTL_S = 60 * 60 * 8;      // 8 hours
 const MAX_ATTEMPTS = 8;                // per IP
 const ATTEMPT_WINDOW_S = 15 * 60;
@@ -171,6 +173,66 @@ function validate(input) {
   return { version: 1, cheryleLeave: leave, events, tbd, updatedAt: new Date().toISOString() };
 }
 
+
+/* ---------- version history ---------- */
+
+/** Key order differs between hand-written seed data and validator output, so
+    compare a canonical form rather than raw JSON. */
+function stable(v) {
+  if (Array.isArray(v)) return `[${v.map(stable).join(",")}]`;
+  if (v && typeof v === "object") {
+    return `{${Object.keys(v).sort().filter((k) => v[k] !== undefined)
+      .map((k) => `${JSON.stringify(k)}:${stable(v[k])}`).join(",")}}`;
+  }
+  return JSON.stringify(v);
+}
+
+/** Plain-language description of what one save changed. */
+function describeChange(before, after) {
+  const o = new Map((before?.events || []).map((e) => [e.id, e]));
+  const n = new Map((after?.events || []).map((e) => [e.id, e]));
+  const added = [], removed = [], changed = [];
+  for (const [id, e] of n) if (!o.has(id)) added.push(e.label);
+  for (const [id, e] of o) if (!n.has(id)) removed.push(e.label);
+  for (const [id, e] of n) {
+    const was = o.get(id);
+    if (was && stable(was) !== stable(e)) changed.push(e.label);
+  }
+  const say = (verb, list) =>
+    list.length === 1 ? `${verb} ${list[0]}`
+                      : `${verb} ${list.length} entries`;
+  const parts = [];
+  if (added.length) parts.push(say("Added", added));
+  if (removed.length) parts.push(say("Removed", removed));
+  if (changed.length) parts.push(say("Edited", changed));
+  if (!parts.length) {
+    const leaveMoved = stable(before?.cheryleLeave) !== stable(after?.cheryleLeave);
+    const tbdMoved = stable(before?.tbd || []) !== stable(after?.tbd || []);
+    if (leaveMoved) parts.push("Changed Cheryle's leave");
+    if (tbdMoved) parts.push("Changed the to-be-decided list");
+  }
+  return parts.join(" · ") || "No visible change";
+}
+
+async function readHistory(env) {
+  return (await env.TIMELINE.get(HKEY, "json")) || [];
+}
+
+/** Archive `snapshot` as the version being replaced by `next`. */
+async function archive(env, snapshot, next) {
+  if (!snapshot) return;
+  const history = await readHistory(env);
+  history.unshift({
+    id: `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    savedAt: snapshot.updatedAt || new Date().toISOString(),
+    archivedAt: new Date().toISOString(),
+    change: describeChange(snapshot, next),
+    count: (snapshot.events || []).length,
+    data: { version: 1, cheryleLeave: snapshot.cheryleLeave, events: snapshot.events, tbd: snapshot.tbd || [] },
+  });
+  await env.TIMELINE.put(HKEY, JSON.stringify(history.slice(0, MAX_HISTORY)));
+}
+
 /* ---------- rate limiting ---------- */
 
 async function tooManyAttempts(env, ip) {
@@ -183,6 +245,13 @@ async function noteFailure(env, ip) {
 }
 
 /* ---------- routes ---------- */
+
+async function authed(env, request) {
+  const auth = request.headers.get("Authorization") || "";
+  const tok = auth.startsWith("Bearer ") ? auth.slice(7) : "";
+  return Boolean(env.SESSION_SECRET) && (await verifyToken(env.SESSION_SECRET, tok));
+}
+
 
 export default {
   async fetch(request, env) {
@@ -217,9 +286,7 @@ export default {
     }
 
     if (path === "/api/data" && request.method === "PUT") {
-      const auth = request.headers.get("Authorization") || "";
-      const token = auth.startsWith("Bearer ") ? auth.slice(7) : "";
-      if (!env.SESSION_SECRET || !(await verifyToken(env.SESSION_SECRET, token))) {
+      if (!(await authed(env, request))) {
         return json(request, { error: "Your session expired. Sign in again." }, 401);
       }
       let body;
@@ -227,8 +294,42 @@ export default {
       let clean;
       try { clean = validate(body); }
       catch (err) { return json(request, { error: err.message }, 422); }
+      const previous = (await env.TIMELINE.get(KEY, "json")) || SEED;
+      await archive(env, previous, clean);
       await env.TIMELINE.put(KEY, JSON.stringify(clean));
       return json(request, { ok: true, updatedAt: clean.updatedAt });
+    }
+
+
+    if (path === "/api/history" && request.method === "GET") {
+      if (!(await authed(env, request))) {
+        return json(request, { error: "Your session expired. Sign in again." }, 401);
+      }
+      const history = await readHistory(env);
+      /* metadata only - restoring happens server-side, so snapshots never travel */
+      return json(request, history.map(({ id, savedAt, archivedAt, change, count }) =>
+        ({ id, savedAt, archivedAt, change, count })));
+    }
+
+    if (path === "/api/restore" && request.method === "POST") {
+      if (!(await authed(env, request))) {
+        return json(request, { error: "Your session expired. Sign in again." }, 401);
+      }
+      let body;
+      try { body = await request.json(); } catch { return json(request, { error: "Bad request." }, 400); }
+      const history = await readHistory(env);
+      const entry = history.find((h) => h.id === body?.id);
+      if (!entry) return json(request, { error: "That version is no longer available." }, 404);
+
+      let clean;
+      try { clean = validate(entry.data); }
+      catch (err) { return json(request, { error: `That version can't be restored: ${err.message}` }, 422); }
+
+      /* archive what is live now, so the restore itself can be undone */
+      const current = (await env.TIMELINE.get(KEY, "json")) || SEED;
+      await archive(env, current, clean);
+      await env.TIMELINE.put(KEY, JSON.stringify(clean));
+      return json(request, { ok: true, updatedAt: clean.updatedAt, data: clean });
     }
 
     if (path === "/api/health") {

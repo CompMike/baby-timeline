@@ -73,6 +73,18 @@ into `v2/config.js` and push.
 Then open http://localhost:8777/v2/. Local credentials come from `worker/.dev.vars`
 (gitignored) and are not the real ones.
 
+### Version history
+
+Every save archives the version it replaced, keeping the last 20 in KV under
+`history`. `GET /api/history` returns metadata only - timestamps, entry counts and
+a plain-language description of what that save changed - so snapshots never travel
+to the browser. `POST /api/restore` puts a version back server-side, and archives
+whatever was live first, so a restore is itself undoable.
+
+The change descriptions compare a canonicalised form of the data, because the
+validator rewrites object keys in a fixed order and a raw JSON comparison reports
+entries as edited when nothing actually changed.
+
 ### Security notes
 
 - The password is only ever compared inside the Worker, using a timing-safe
