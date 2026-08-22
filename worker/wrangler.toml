@@ -8,7 +8,7 @@ compatibility_date = "2026-08-01"
 
 [[kv_namespaces]]
 binding = "TIMELINE"
-id = "local_dev_placeholder"
+id = "388a948e463d4a83aeeeae74ae2f5c2e"
 
 # Local-only values for `wrangler dev`. Real secrets are set with `wrangler secret put`.
 [vars]

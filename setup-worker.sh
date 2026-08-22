@@ -16,6 +16,14 @@ echo "==> 2/5  Creating the KV namespace"
 OUT=$(npx wrangler kv namespace create TIMELINE --config "$CFG" 2>&1) || { echo "$OUT"; exit 1; }
 echo "$OUT"
 ID=$(printf '%s' "$OUT" | grep -oE '[0-9a-f]{32}' | head -1)
+# Right after creation the namespace can be missing from the list for a few seconds,
+# so fall back to polling for it rather than giving up.
+for _ in 1 2 3 4 5; do
+  [ -n "$ID" ] && break
+  sleep 3
+  ID=$(npx wrangler kv namespace list --config "$CFG" 2>/dev/null \
+       | python3 -c "import sys,json;print(next((n['id'] for n in json.load(sys.stdin) if n['title']=='TIMELINE'),''))" 2>/dev/null || true)
+done
 if [ -z "$ID" ]; then
   echo "Could not read the namespace id from the output above."
   echo "Copy it into $CFG by hand, then re-run from step 3."
