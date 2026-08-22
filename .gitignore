@@ -1,2 +1,5 @@
 .DS_Store
+node_modules/
 options*.html
+worker/.dev.vars
+worker/.wrangler/

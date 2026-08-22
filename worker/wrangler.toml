@@ -1,0 +1,14 @@
+name = "baby-timeline-api"
+main = "src/index.js"
+compatibility_date = "2026-08-01"
+
+# Secrets are NOT set here. Set them once, interactively:
+#   npx wrangler secret put ADMIN_PASSWORD --config worker/wrangler.toml
+#   npx wrangler secret put SESSION_SECRET --config worker/wrangler.toml
+
+[[kv_namespaces]]
+binding = "TIMELINE"
+id = "local_dev_placeholder"
+
+# Local-only values for `wrangler dev`. Real secrets are set with `wrangler secret put`.
+[vars]

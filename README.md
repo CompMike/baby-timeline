@@ -43,6 +43,48 @@ only. After editing `index.html`, regenerate it:
 then republish `artifact.html` to the same URL. Never edit `artifact.html` by hand;
 it is overwritten on every build.
 
+## v2 - the version with an admin panel
+
+`/v2/` is a work-in-progress copy that reads its dates from a Cloudflare Worker
+instead of having them baked in. **v1 at the site root is untouched and stays the
+live version** until v2 is proven.
+
+- `v2/index.html` - same timeline, but renders from its inline seed first and then
+  upgrades to whatever the API returns. If the Worker is down, unreachable, or not
+  deployed yet, the page still works and shows the seeded dates.
+- `v2/admin.html` - password-protected editor.
+- `v2/data.json` - the seed, and the single source of truth for the baked-in copy.
+- `v2/config.js` - the one place the deployed Worker URL is set.
+- `worker/` - the API. Password and session key live only as Worker secrets.
+
+### First-time setup
+
+    ./setup-worker.sh
+
+It signs you in to Cloudflare, creates the KV namespace, prompts you for the admin
+password, generates a random session key, and deploys. Then paste the printed URL
+into `v2/config.js` and push.
+
+### Working on it locally
+
+    npm run dev     # Worker on :8787 with local KV
+    npm run site    # static site on :8777
+
+Then open http://localhost:8777/v2/. Local credentials come from `worker/.dev.vars`
+(gitignored) and are not the real ones.
+
+### Security notes
+
+- The password is only ever compared inside the Worker, using a timing-safe
+  comparison, and is stored as a Cloudflare secret - not in this repo.
+- Sessions are HMAC-signed tokens that expire after 8 hours. Nothing is stored per
+  session, so there is no session store to leak.
+- Failed logins are counted per IP; 8 within 15 minutes blocks further attempts.
+- Every save is validated server-side (real dates, end after start, known colours,
+  unique ids) so a bad edit cannot break the public page.
+- `admin.html` being publicly reachable is fine - it is only a form; every check
+  happens in the Worker.
+
 ## Editing the dates
 
 Everything lives in `index.html`:

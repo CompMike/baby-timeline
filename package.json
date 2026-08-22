@@ -1,0 +1,14 @@
+{
+  "name": "baby-timeline",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Timeline of due dates, parental leave and family visits",
+  "scripts": {
+    "dev": "wrangler dev --config worker/wrangler.toml",
+    "deploy": "wrangler deploy --config worker/wrangler.toml",
+    "site": "python3 -m http.server 8777"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
