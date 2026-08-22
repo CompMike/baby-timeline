@@ -235,20 +235,25 @@
   }
   .scrim {
     position: fixed; inset: 0; background: rgba(59,51,54,.34); z-index: 199;
-    opacity: 0; pointer-events: none; transition: opacity .28s ease;
+    opacity: 0; pointer-events: none; transition: opacity .34s ease;
   }
   .scrim.open { opacity: 1; pointer-events: auto; }
 
   .drawer {
     position: fixed; top: 0; right: 0; bottom: 0; z-index: 200;
-    width: min(470px, 100%); background: var(--panel);
+    width: min(470px, calc(100% - 46px)); background: var(--panel);
     border-left: 1px solid var(--line-strong);
     box-shadow: -10px 0 44px rgba(89,62,68,.16);
     display: flex; flex-direction: column;
     transform: translateX(100%); visibility: hidden;
-    transition: transform .28s cubic-bezier(.4,0,.2,1), visibility 0s linear .28s;
+    will-change: transform;
+    border-radius: 18px 0 0 18px;
+    transition: transform .34s cubic-bezier(.32,.72,0,1), visibility 0s linear .34s;
   }
-  .drawer.open { transform: none; visibility: visible; transition-delay: 0s; }
+  .drawer.open {
+    transform: none; visibility: visible;
+    transition: transform .34s cubic-bezier(.32,.72,0,1), visibility 0s linear 0s;
+  }
   @media (prefers-reduced-motion: reduce) {
     .drawer, .scrim { transition-duration: .01ms; }
   }
@@ -270,7 +275,7 @@
   .icon-btn:hover { background: var(--bg); color: var(--ink); }
   .icon-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  .drawer-body { flex: 1 1 auto; overflow-y: auto; padding: 18px; }
+  .drawer-body { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 18px; }
   .drawer-foot {
     flex: 0 0 auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
     padding: 14px 18px; border-top: 1px solid var(--line-strong); background: var(--panel);
@@ -326,8 +331,15 @@
 
   .opt { border-left: 3px solid var(--line-strong); padding: 8px 0 8px 10px; margin: 10px 0; }
   .opt h4 { margin: 0 0 7px; font-size: 12px; font-weight: 600; }
-  .span-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 7px; }
-  .span-row > div { flex: 1 1 110px; }
+  /* From / To / Remove must be free to wrap: at 16px inputs (needed to stop iOS
+     zooming) three across does not fit a narrow drawer. */
+  .span-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 7px; flex-wrap: wrap; }
+  .span-row > div { flex: 1 1 128px; min-width: 0; }
+  .span-row > button { flex: 0 0 auto; margin-left: auto; }
+
+  @media (pointer: coarse) {
+    .drawer input, .drawer select { font-size: 16px; }
+  }
 
   .msg { font-size: 12.5px; }
   .msg.err { color: var(--today); }
