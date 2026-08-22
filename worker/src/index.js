@@ -9,7 +9,7 @@
  * HMAC-SHA256 signed with SESSION_SECRET and expire; nothing is stored per session.
  */
 
-import SEED from "../../v2/data.json";
+import SEED from "../../data.json";
 
 const KEY = "timeline";
 const HKEY = "history";

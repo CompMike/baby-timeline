@@ -43,19 +43,32 @@ only. After editing `index.html`, regenerate it:
 then republish `artifact.html` to the same URL. Never edit `artifact.html` by hand;
 it is overwritten on every build.
 
-## v2 - the version with an admin panel
+## Layout
 
-`/v2/` is a work-in-progress copy that reads its dates from a Cloudflare Worker
-instead of having them baked in. **v1 at the site root is untouched and stays the
-live version** until v2 is proven.
+The editable timeline is now the main site at the repo root. `/v2/` redirects to `/`
+for anyone holding an old link.
 
-- `v2/index.html` - same timeline, but renders from its inline seed first and then
-  upgrades to whatever the API returns. If the Worker is down, unreachable, or not
-  deployed yet, the page still works and shows the seeded dates.
-- `v2/admin.html` - password-protected editor.
-- `v2/data.json` - the seed, and the single source of truth for the baked-in copy.
-- `v2/config.js` - the one place the deployed Worker URL is set.
+- `index.html` - the site. Renders from its inline seed first, then upgrades to
+  whatever the API returns. If the Worker is down, unreachable, or not configured,
+  the page still works and shows the seeded dates.
+- `admin.html` - redirects to `index.html#edit`, which opens the editor drawer.
+- `data.json` - the seed, and the single source of truth for the baked-in copy.
+  Also imported by the Worker as its own starting data.
+- `config.js` - the one place the deployed Worker URL is set.
 - `worker/` - the API. Password and session key live only as Worker secrets.
+- `artifact.html` - generated; see below.
+
+### The published artifact
+
+`build-artifact.py` strips the `config.js` tag, so `window.BT_API` is never set in
+the artifact. `API` resolves to an empty string, and the page removes its own edit
+button, drawer and scrim on load. The artifact is therefore a static snapshot of
+whatever dates were in `data.json` when it was built - the editor is not merely
+broken there, it is absent. That is deliberate: the artifact is served from another
+origin, which the Worker's CORS allowlist rejects.
+
+Rebuild and republish it after changing the dates in `data.json`; it does not
+follow live edits made through the admin panel.
 
 ### First-time setup
 
