@@ -293,11 +293,21 @@
   /* Native date and select controls carry their own metrics, so they render taller
      or shorter than a text input - and iOS centres date text. Strip the native
      appearance and pin one box for all three. */
-  .drawer input, .drawer select {
+  /* Checkboxes must keep their native rendering - stripping appearance leaves them
+     unable to show a checked state at all. */
+  .drawer input[type="checkbox"] {
+    appearance: auto; -webkit-appearance: auto;
+    width: 16px; min-height: 0; height: 16px; flex: 0 0 auto;
+    accent-color: var(--accent); margin: 0 8px 0 0; padding: 0; border: 0;
+  }
+  .drawer input:not([type="checkbox"]), .drawer select {
     appearance: none; -webkit-appearance: none;
     font: inherit; font-size: 13.5px; color: var(--ink); background-color: var(--bg);
     width: 100%; border: 1px solid var(--line-strong); border-radius: 8px;
     padding: 7px 9px; line-height: 1.4; min-height: 38px; text-align: left;
+  }
+  .drawer input, .drawer select {
+    font: inherit; color: var(--ink); background-color: var(--bg);
   }
   .drawer input[type="date"] { display: block; }
   .drawer select {
@@ -345,6 +355,18 @@
   .ev .when { flex: 0 0 auto; font-size: 11.5px; color: var(--ink-faint); }
   .ev-body { padding: 12px; }
 
+  .add-row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .nest {
+    margin-top: 12px; padding: 10px 0 10px 12px;
+    border-left: 3px solid var(--line-strong);
+  }
+  .kid { border: 1px solid var(--line); border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+  .kid .row { margin-bottom: 8px; }
+  .warn-note {
+    font-size: 12px; color: var(--today); margin: 10px 0 6px;
+    padding-left: 8px; border-left: 2px solid var(--today);
+  }
+
   .opt { border-left: 3px solid var(--line-strong); padding: 8px 0 8px 10px; margin: 10px 0; }
   .opt h4 { margin: 0 0 7px; font-size: 12px; font-weight: 600; }
   /* From / To / Remove must be free to wrap: at 16px inputs (needed to stop iOS
@@ -354,7 +376,8 @@
   .span-row > button { flex: 0 0 auto; margin-left: auto; }
 
   @media (pointer: coarse) {
-    .drawer input, .drawer select { font-size: 16px; min-height: 44px; }
+    .drawer input:not([type="checkbox"]), .drawer select { font-size: 16px; min-height: 44px; }
+    .drawer input[type="checkbox"] { width: 20px; height: 20px; }
   }
 
   .history { border: 1px solid var(--line); border-radius: 10px; margin-top: 20px; background: var(--panel); }
@@ -1254,9 +1277,56 @@ async function loadEditor() {
 
 function summarise(ev) {
   if (ev.date) return fmt(d(ev.date));
-  if (ev.start) return `${fmt(d(ev.start))} – ${fmt(d(ev.end))}`;
   if (ev.options) return `${ev.options.length} options`;
-  return "";
+  if (ev.start && ev.end) return `${fmt(d(ev.start))} – ${fmt(d(ev.end))}`;
+  return "dates not set";
+}
+
+/* Nesting lives in the order of the array: a `parent` entry owns the run of
+   `child` entries directly after it. Group them so the editor can show, move and
+   delete a parent together with its nested items. */
+function groupEvents() {
+  const groups = [];
+  for (let i = 0; i < draft.events.length; i++) {
+    const e = draft.events[i];
+    if (e.parent) {
+      const kids = [];
+      let j = i + 1;
+      while (j < draft.events.length && draft.events[j].child) kids.push(j++);
+      groups.push({ at: i, kids });
+      i = j - 1;
+    } else {
+      groups.push({ at: i, kids: [] });   /* a stray child renders on its own */
+    }
+  }
+  return groups;
+}
+
+/** The group this entry could join: the nearest parent above it with only nested
+    items in between. -1 when it is not adjacent to one. */
+function groupAbove(i) {
+  for (let p = i - 1; p >= 0; p--) {
+    if (draft.events[p].parent) return p;
+    if (!draft.events[p].child) return -1;
+  }
+  return -1;
+}
+
+/** A `child` with no group above it - nests nowhere, so say so. */
+function isOrphan(ev, i) {
+  return Boolean(ev.child) && groupAbove(i) === -1;
+}
+
+/** Move a whole group (parent plus nested items) one place up or down. */
+function moveGroup(gi, dir) {
+  const groups = groupEvents();
+  const to = gi + dir;
+  if (to < 0 || to >= groups.length) return;
+  const blocks = groups.map((g) => [g.at, ...g.kids].map((k) => draft.events[k]));
+  const [moved] = blocks.splice(gi, 1);
+  blocks.splice(to, 0, moved);
+  draft.events = blocks.flat();
+  redrawKeepingOpen();
 }
 
 function field(labelText, value, oninput, type = "text") {
@@ -1298,19 +1368,22 @@ function drawEditor() {
   body.append(elm("h3", { textContent: "Timeline entries",
     style: "font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);margin:18px 0 8px" }));
   const list = elm("div", { id: "ev-list" });
-  draft.events.forEach((ev, i) => list.append(eventCard(ev, i)));
+  groupEvents().forEach((g, gi) => list.append(eventCard(draft.events[g.at], g, gi)));
   body.append(list);
 
-  const addEv = elm("button", { className: "ghost", type: "button", textContent: "+ Add an entry" });
-  addEv.addEventListener("click", () => {
-    draft.events.push({ id: `e-${Date.now().toString(36)}`, label: "New entry", cat: "baby", start: "", end: "" });
-    drawEditor();
-    const last = $("ev-list").lastElementChild;
-    last.open = true;
-    last.scrollIntoView({ block: "center" });
-    last.querySelector("input").focus();
-  });
-  body.append(addEv);
+  const adds = elm("div", { className: "add-row" });
+  for (const [label, make] of [
+    ["+ Date range", () => ({ label: "New entry", cat: "baby", start: "", end: "" })],
+    ["+ Milestone",  () => ({ label: "New milestone", cat: "baby", date: "" })],
+    ["+ Group",      () => ({ label: "New group", cat: "visit", parent: true, visitor: true, start: "", end: "" })],
+  ]) {
+    const b = elm("button", { className: "ghost", type: "button", textContent: label });
+    b.addEventListener("click", () => addEntry(make()));
+    adds.append(b);
+  }
+  body.append(adds);
+  body.append(elm("p", { className: "hint", style: "margin:6px 0 0",
+    textContent: "A group is a heading bar with stays nested underneath, like Nida & Rae's trip." }));
 
   body.append(elm("h3", { textContent: "Still to be decided",
     style: "font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);margin:20px 0 8px" }));
@@ -1337,10 +1410,41 @@ function drawEditor() {
   foot.append(save, msg);
 }
 
-function eventCard(ev, i) {
-  const card = elm("details", { className: "ev" });     // collapsed unless .open is set
+function addEntry(shape) {
+  draft.events.push({ id: `e-${Date.now().toString(36)}`, ...shape });
+  drawEditor();
+  const last = $("ev-list").lastElementChild;
+  last.open = true;
+  last.scrollIntoView({ block: "center" });
+  last.querySelector("input")?.focus();
+}
+
+/** Fields that differ by entry type. */
+function dateFields(ev, refresh) {
+  const row = elm("div", { className: "row" });
+  if (ev.options) return row;                       /* options are edited below */
+  if ("date" in ev) {
+    row.append(field("Date", ev.date, (v) => { ev.date = v; refresh(); }, "date"));
+  } else {
+    row.append(field("From", ev.start, (v) => { ev.start = v; refresh(); }, "date"),
+               field("To", ev.end, (v) => { ev.end = v; refresh(); }, "date"));
+  }
+  return row;
+}
+
+function kindOf(ev) {
+  if (ev.options) return "switchable options";
+  if (ev.parent) return "group";
+  if (ev.child) return "nested";
+  if ("date" in ev) return "single day";
+  return "date range";
+}
+
+function eventCard(ev, group, gi) {
+  const card = elm("details", { className: "ev" });
   const dot = elm("span", { className: "dot" });
-  dot.style.background = `var(${CAT[ev.cat] ? CAT[ev.cat].slice(4, -1) : "--ink-faint"})`;
+  const paint = () => { dot.style.background = `var(${CAT[ev.cat] ? CAT[ev.cat].slice(4, -1) : "--ink-faint"})`; };
+  paint();
   const name = elm("span", { className: "name", textContent: ev.label || "(untitled)" });
   const when = elm("span", { className: "when", textContent: summarise(ev) });
   card.append(elm("summary", {}, [elm("span", { className: "chev", textContent: "▶" }), dot, name, when]));
@@ -1355,14 +1459,10 @@ function eventCard(ev, i) {
 
   const sel = elm("select");
   for (const [val, text] of CATS) sel.append(elm("option", { value: val, textContent: text, selected: ev.cat === val }));
-  sel.addEventListener("change", () => {
-    ev.cat = sel.value;
-    dot.style.background = `var(${CAT[ev.cat].slice(4, -1)})`;
-  });
-  const r2 = elm("div", { className: "row" }, [elm("div", {}, [elm("label", { textContent: "Colour" }), sel])]);
+  sel.addEventListener("change", () => { ev.cat = sel.value; paint(); });
+  box.append(elm("div", { className: "row" }, [elm("div", {}, [elm("label", { textContent: "Colour" }), sel])]));
 
   if (ev.options) {
-    box.append(r2);
     ev.options.forEach((opt) => {
       const ob = elm("div", { className: "opt" });
       ob.append(elm("h4", { textContent: `Option ${opt.n}` }));
@@ -1377,23 +1477,92 @@ function eventCard(ev, i) {
       ob.append(add);
       box.append(ob);
     });
-  } else if (ev.date) {
-    r2.append(field("Date", ev.date, (v) => { ev.date = v; refresh(); }, "date"));
-    box.append(r2);
   } else {
-    r2.append(field("From", ev.start, (v) => { ev.start = v; refresh(); }, "date"),
-              field("To", ev.end, (v) => { ev.end = v; refresh(); }, "date"));
-    box.append(r2);
+    box.append(dateFields(ev, refresh));
+  }
+
+  /* Counting in the overlap check only makes sense for something with a duration. */
+  if (!("date" in ev) && !ev.child) {
+    const cb = elm("input", { type: "checkbox", checked: !!ev.visitor });
+    cb.addEventListener("change", () => { ev.visitor = cb.checked || undefined; });
+    const lbl = elm("label", { style: "text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:400;color:var(--ink-soft);display:flex;align-items:center;margin-top:4px" });
+    lbl.append(cb, document.createTextNode("Flag clashes with other visits"));
+    box.append(lbl);
+  }
+
+  /* nested items, owned by this group */
+  if (ev.parent) {
+    const nest = elm("div", { className: "nest" });
+    nest.append(elm("h4", { textContent: "Nested items", style: "margin:0 0 6px;font-size:12px;font-weight:600" }));
+    if (!group.kids.length) {
+      nest.append(elm("p", { className: "hint", style: "margin:0 0 6px", textContent: "Nothing nested yet." }));
+    }
+    group.kids.forEach((ki, n) => {
+      const kid = draft.events[ki];
+      const krow = elm("div", { className: "kid" });
+      const kr1 = elm("div", { className: "row" });
+      kr1.append(field("Name", kid.label, (v) => (kid.label = v)));
+      kr1.append(field("From", kid.start, (v) => (kid.start = v), "date"),
+                 field("To", kid.end, (v) => (kid.end = v), "date"));
+      krow.append(kr1);
+      const tools = elm("div", { style: "display:flex;gap:6px;align-items:center" });
+      const up = elm("button", { className: "ghost", type: "button", textContent: "↑" });
+      const dn = elm("button", { className: "ghost", type: "button", textContent: "↓" });
+      const out = elm("button", { className: "ghost", type: "button", textContent: "Unnest" });
+      const rm = elm("button", { className: "danger", type: "button", textContent: "Remove" });
+      up.addEventListener("click", () => { if (n > 0) { swap(ki, ki - 1); } });
+      dn.addEventListener("click", () => { if (n < group.kids.length - 1) { swap(ki, ki + 1); } });
+      out.addEventListener("click", () => {
+        /* lift it out and place it after the whole group, so the run stays intact */
+        const [moved] = draft.events.splice(ki, 1);
+        delete moved.child;
+        const end = group.at + group.kids.length;      /* one fewer child now */
+        draft.events.splice(end, 0, moved);
+        redrawKeepingOpen();
+      });
+      rm.addEventListener("click", () => { draft.events.splice(ki, 1); redrawKeepingOpen(); });
+      tools.append(up, dn, out, rm);
+      krow.append(tools);
+      nest.append(krow);
+    });
+    const addKid = elm("button", { className: "ghost", type: "button", textContent: "+ Add nested item" });
+    addKid.addEventListener("click", () => {
+      const at = group.kids.length ? group.kids[group.kids.length - 1] + 1 : group.at + 1;
+      draft.events.splice(at, 0, { id: `e-${Date.now().toString(36)}`, label: "New stay",
+                                   cat: ev.cat, child: true, start: "", end: "" });
+      redrawKeepingOpen();
+    });
+    nest.append(addKid);
+    box.append(nest);
+  }
+
+  if (isOrphan(ev, group.at)) {
+    box.append(elm("p", { className: "warn-note",
+      textContent: "Marked as nested but sits under no group. Move it below a group, or unnest it." }));
+    const fix = elm("button", { className: "ghost", type: "button", textContent: "Unnest" });
+    fix.addEventListener("click", () => { delete ev.child; redrawKeepingOpen(); });
+    box.append(fix);
   }
 
   const tools = elm("div", { style: "display:flex;gap:8px;align-items:center;margin-top:10px" });
+  const owner = (!ev.parent && !ev.child && !ev.options) ? groupAbove(group.at) : -1;
+  if (owner >= 0) {
+    const nest = elm("button", { className: "ghost", type: "button",
+      textContent: `⤷ Nest under "${draft.events[owner].label}"` });
+    nest.addEventListener("click", () => { ev.child = true; redrawKeepingOpen(); });
+    tools.append(nest);
+  }
   const up = elm("button", { className: "ghost", type: "button", textContent: "↑ Move up" });
   const down = elm("button", { className: "ghost", type: "button", textContent: "↓ Move down" });
   const del = elm("button", { className: "danger", type: "button", textContent: "Delete" });
-  up.addEventListener("click", () => { if (i > 0) { [draft.events[i-1], draft.events[i]] = [draft.events[i], draft.events[i-1]]; redrawKeepingOpen(); } });
-  down.addEventListener("click", () => { if (i < draft.events.length-1) { [draft.events[i+1], draft.events[i]] = [draft.events[i], draft.events[i+1]]; redrawKeepingOpen(); } });
+  up.addEventListener("click", () => moveGroup(gi, -1));
+  down.addEventListener("click", () => moveGroup(gi, 1));
   del.addEventListener("click", () => {
-    if (confirm(`Delete "${ev.label}"? This takes effect when you save.`)) { draft.events.splice(i, 1); drawEditor(); }
+    const extra = group.kids.length ? ` and its ${group.kids.length} nested item${group.kids.length === 1 ? "" : "s"}` : "";
+    if (confirm(`Delete "${ev.label}"${extra}? This takes effect when you save.`)) {
+      draft.events.splice(group.at, 1 + group.kids.length);
+      drawEditor();
+    }
   });
   tools.append(up, down, del);
   box.append(tools);
@@ -1402,7 +1571,11 @@ function eventCard(ev, i) {
   return card;
 }
 
-/* keep whichever entries were expanded expanded across a redraw */
+function swap(a, b) {
+  [draft.events[a], draft.events[b]] = [draft.events[b], draft.events[a]];
+  redrawKeepingOpen();
+}
+
 function redrawKeepingOpen() {
   const open = [...document.querySelectorAll("#ev-list .ev")].map((c) => c.open);
   drawEditor();

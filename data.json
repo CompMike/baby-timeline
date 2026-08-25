@@ -1,41 +1,208 @@
 {
   "version": 1,
-  "cheryleLeave": { "start": "2026-09-26", "end": "2027-02-01" },
+  "cheryleLeave": {
+    "start": "2026-09-26",
+    "end": "2027-02-01"
+  },
   "events": [
-    { "id": "duezone", "label": "Due zone", "sub": "37–40 weeks", "cat": "baby",
-      "start": "2026-09-09", "end": "2026-09-29" },
-    { "id": "due", "label": "Due date", "cat": "baby", "date": "2026-09-30" },
-    { "id": "c-last", "label": "Cheryle's last day of work", "cat": "work", "date": "2026-09-25" },
-    { "id": "m-last", "label": "Michael's last day of work", "cat": "work", "date": "2026-09-29" },
-    { "id": "c-leave", "label": "Cheryle's maternity leave", "cat": "work",
-      "start": "2026-09-26", "end": "2027-02-01" },
-    { "id": "m-leave", "label": "Michael's leave", "cat": "work", "group": "michael",
+    {
+      "id": "duezone",
+      "label": "Due zone",
+      "cat": "baby",
+      "sub": "37–40 weeks",
+      "start": "2026-09-09",
+      "end": "2026-09-29"
+    },
+    {
+      "id": "due",
+      "label": "Due date",
+      "cat": "baby",
+      "date": "2026-09-30"
+    },
+    {
+      "id": "c-last",
+      "label": "Cheryle's last day of work",
+      "cat": "work",
+      "date": "2026-09-25"
+    },
+    {
+      "id": "m-last",
+      "label": "Michael's last day of work",
+      "cat": "work",
+      "date": "2026-09-29"
+    },
+    {
+      "id": "c-leave",
+      "label": "Cheryle's maternity leave",
+      "cat": "work",
+      "start": "2026-09-26",
+      "end": "2027-02-01"
+    },
+    {
+      "id": "m-leave",
+      "label": "Michael's leave",
+      "cat": "work",
+      "group": "michael",
       "options": [
-        { "n": 1, "label": "Option 1 — split", "gapLabel": "back at work",
-          "spans": [ { "start": "2026-09-29", "end": "2026-12-01" },
-                     { "start": "2027-02-01", "end": "2027-03-31" } ] },
-        { "n": 2, "label": "Option 2 — full time off",
-          "spans": [ { "start": "2026-09-29", "end": "2027-02-01" } ] } ] },
-    { "id": "nida", "label": "Nida & Rae in the US", "cat": "visit", "parent": true, "visitor": true,
-      "start": "2026-10-17", "end": "2026-11-05" },
-    { "id": "nida-ny1", "label": "New York — BellTel", "cat": "visit", "child": true,
-      "start": "2026-10-17", "end": "2026-10-25" },
-    { "id": "nida-va", "label": "Virginia", "cat": "visit", "child": true,
-      "start": "2026-10-25", "end": "2026-11-03" },
-    { "id": "nida-ny2", "label": "New York — hotel", "cat": "visit", "child": true,
-      "start": "2026-11-03", "end": "2026-11-05" },
-    { "id": "edw", "label": "Edwina visits", "cat": "edwina", "group": "edwina", "visitor": true,
+        {
+          "n": 1,
+          "label": "Option 1 — split",
+          "spans": [
+            {
+              "start": "2026-09-29",
+              "end": "2026-12-01"
+            },
+            {
+              "start": "2027-02-01",
+              "end": "2027-03-31"
+            }
+          ],
+          "gapLabel": "back at work"
+        },
+        {
+          "n": 2,
+          "label": "Option 2 — full time off",
+          "spans": [
+            {
+              "start": "2026-09-29",
+              "end": "2027-02-01"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "nida",
+      "label": "Nida & Rae in the US",
+      "cat": "visit",
+      "parent": true,
+      "visitor": true,
+      "start": "2026-10-17",
+      "end": "2026-11-05"
+    },
+    {
+      "id": "e-mt7yfgvr",
+      "label": "New York hotel start",
+      "cat": "visit",
+      "child": true,
+      "start": "2026-10-17",
+      "end": "2026-10-19"
+    },
+    {
+      "id": "nida-ny1",
+      "label": "New York — BellTel",
+      "cat": "visit",
+      "child": true,
+      "start": "2026-10-19",
+      "end": "2026-10-25"
+    },
+    {
+      "id": "nida-va",
+      "label": "Virginia",
+      "cat": "visit",
+      "child": true,
+      "start": "2026-10-25",
+      "end": "2026-11-03"
+    },
+    {
+      "id": "nida-ny2",
+      "label": "New York — hotel end",
+      "cat": "visit",
+      "child": true,
+      "start": "2026-11-03",
+      "end": "2026-11-05"
+    },
+    {
+      "id": "edw",
+      "label": "Edwina visits",
+      "cat": "edwina",
+      "visitor": true,
+      "group": "edwina",
       "options": [
-        { "n": 1, "label": "Option 1", "spans": [ { "start": "2026-11-01", "end": "2026-11-14" } ] },
-        { "n": 2, "label": "Option 2", "spans": [ { "start": "2026-10-03", "end": "2026-10-17" } ] } ] },
-    { "id": "edw-bday", "label": "Edwina's 70th birthday", "cat": "edwina", "date": "2026-10-17" },
-    { "id": "lor", "label": "Loretta visits", "cat": "loretta", "group": "loretta", "visitor": true,
+        {
+          "n": 1,
+          "label": "Option 1",
+          "spans": [
+            {
+              "start": "2026-11-01",
+              "end": "2026-11-14"
+            }
+          ]
+        },
+        {
+          "n": 2,
+          "label": "Option 2",
+          "spans": [
+            {
+              "start": "2026-10-03",
+              "end": "2026-10-17"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "edw-bday",
+      "label": "Edwina's 70th birthday",
+      "cat": "edwina",
+      "date": "2026-10-17"
+    },
+    {
+      "id": "lor",
+      "label": "Loretta visits",
+      "cat": "loretta",
+      "visitor": true,
+      "group": "loretta",
       "options": [
-        { "n": 1, "label": "Option 1 — pick up Manila unit",
-          "spans": [ { "start": "2026-10-23", "end": "2026-10-25" } ] },
-        { "n": 2, "label": "Option 2 — window",
-          "spans": [ { "start": "2026-10-04", "end": "2026-10-18" } ] } ] },
-    { "id": "6mo", "label": "Baby is 6 months old", "cat": "baby", "date": "2027-04-01" }
+        {
+          "n": 1,
+          "label": "Option 1 — pick up Manila unit",
+          "spans": [
+            {
+              "start": "2026-10-23",
+              "end": "2026-10-25"
+            }
+          ]
+        },
+        {
+          "n": 2,
+          "label": "Option 2 — window",
+          "spans": [
+            {
+              "start": "2026-10-04",
+              "end": "2026-10-18"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "6mo",
+      "label": "Baby is 6 months old",
+      "cat": "baby",
+      "date": "2027-04-01"
+    },
+    {
+      "id": "e-mt7yoe26",
+      "label": "Autodesk Week of Rest",
+      "cat": "work",
+      "start": "2026-12-24",
+      "end": "2027-01-01"
+    },
+    {
+      "id": "e-mt7yxuxm",
+      "label": "Thanksgiving Break",
+      "cat": "work",
+      "start": "2026-11-25",
+      "end": "2026-11-27"
+    }
   ],
-  "tbd": [ { "what": "June travel dates" }, { "what": "July travel dates" } ]
+  "tbd": [
+    {
+      "what": "June travel dates"
+    },
+    {
+      "what": "July travel dates"
+    }
+  ]
 }

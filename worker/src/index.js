@@ -112,7 +112,9 @@ function checkSpan(s, where) {
 }
 
 function checkEvent(e, i) {
-  const at = `events[${i}]`;
+  /* Name the entry, not just its position - "New group" beats "events[14]". */
+  const at = e && typeof e.label === "string" && e.label.trim()
+    ? `"${e.label.trim()}"` : `entry ${i + 1}`;
   if (!e || typeof e !== "object") fail(`${at}: must be an object`);
   if (typeof e.id !== "string" || !e.id.trim()) fail(`${at}.id: required`);
   if (typeof e.label !== "string" || !e.label.trim()) fail(`${at}.label: required`);
@@ -151,12 +153,12 @@ function checkEvent(e, i) {
 
 function validate(input) {
   if (!input || typeof input !== "object") fail("payload must be an object");
-  if (!Array.isArray(input.events) || !input.events.length) fail("events: needs at least one");
+  if (!Array.isArray(input.events) || !input.events.length) fail("Add at least one entry.");
   if (input.events.length > 200) fail("events: too many (max 200)");
 
   const events = input.events.map(checkEvent);
   const ids = events.map((e) => e.id);
-  if (new Set(ids).size !== ids.length) fail("events: ids must be unique");
+  if (new Set(ids).size !== ids.length) fail("Two entries share an id.");
 
   const cl = input.cheryleLeave || {};
   const leave = checkSpan({ start: cl.start, end: cl.end }, "cheryleLeave");
