@@ -332,7 +332,7 @@
   /* collapsible entry */
   .ev { border: 1px solid var(--line); border-radius: 10px; margin-bottom: 8px; background: var(--panel); }
   .ev > summary {
-    list-style: none; cursor: pointer; padding: 10px 12px;
+    list-style: none; cursor: pointer; padding: 6px 6px 6px 12px;
     display: flex; align-items: center; gap: 9px;
   }
   .ev > summary::-webkit-details-marker { display: none; }
@@ -345,6 +345,20 @@
   .ev .name { flex: 1 1 auto; font-size: 13.5px; font-weight: 600; min-width: 0;
               overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .ev .when { flex: 0 0 auto; font-size: 11.5px; color: var(--ink-faint); }
+  .ev .ord { flex: 0 0 auto; display: flex; gap: 1px; margin-left: 2px; }
+  .ev .ord button {
+    appearance: none; background: none; border: 1px solid transparent;
+    color: var(--ink-faint); font: inherit; font-size: 16px; line-height: 1;
+    width: 26px; height: 26px; border-radius: 6px; cursor: pointer; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .ev .ord button:hover:not(:disabled) { background: var(--bg); border-color: var(--line-strong); color: var(--ink-soft); }
+  .ev .ord button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .ev .ord button:disabled { opacity: .28; cursor: default; }
+  @media (pointer: coarse) {
+    .ev .ord button { width: 34px; height: 34px; font-size: 18px; }
+    .ev > summary { padding: 6px 6px 6px 10px; }
+  }
   .ev-body { padding: 12px; }
 
   .add-row { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -1312,6 +1326,7 @@ function moveGroup(gi, dir) {
   const groups = groupEvents();
   const to = gi + dir;
   if (to < 0 || to >= groups.length) return;
+  refocus = { id: draft.events[groups[gi].at].id, dir };
   const blocks = groups.map((g) => [g.at, ...g.kids].map((k) => draft.events[k]));
   const [moved] = blocks.splice(gi, 1);
   blocks.splice(to, 0, moved);
@@ -1358,7 +1373,8 @@ function drawEditor() {
   body.append(elm("h3", { textContent: "Timeline entries",
     style: "font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-faint);margin:18px 0 8px" }));
   const list = elm("div", { id: "ev-list" });
-  groupEvents().forEach((g, gi) => list.append(eventCard(draft.events[g.at], g, gi)));
+  const groups = groupEvents();
+  groups.forEach((g, gi) => list.append(eventCard(draft.events[g.at], g, gi, groups.length)));
   body.append(list);
 
   const adds = elm("div", { className: "add-row" });
@@ -1430,14 +1446,26 @@ function kindOf(ev) {
   return "date range";
 }
 
-function eventCard(ev, group, gi) {
+function eventCard(ev, group, gi, total) {
   const card = elm("details", { className: "ev" });
+  card.dataset.id = ev.id;
   const dot = elm("span", { className: "dot" });
   const paint = () => { dot.style.background = `var(${CAT[ev.cat] ? CAT[ev.cat].slice(4, -1) : "--ink-faint"})`; };
   paint();
   const name = elm("span", { className: "name", textContent: ev.label || "(untitled)" });
   const when = elm("span", { className: "when", textContent: summarise(ev) });
-  card.append(elm("summary", {}, [elm("span", { className: "chev", textContent: "▶" }), dot, name, when]));
+  /* Reorder without opening the entry. These sit inside <summary>, which toggles on
+     click, so each handler has to stop the event reaching it. */
+  const ord = elm("span", { className: "ord" });
+  for (const [dir, glyph, title] of [[-1, "↑", "Move up"], [1, "↓", "Move down"]]) {
+    const ob = elm("button", { type: "button", textContent: glyph, title });
+    ob.dataset.dir = String(dir);
+    ob.setAttribute("aria-label", `${title}: ${ev.label || "untitled"}`);
+    ob.disabled = dir === -1 ? gi === 0 : gi === total - 1;
+    ob.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); moveGroup(gi, dir); });
+    ord.append(ob);
+  }
+  card.append(elm("summary", {}, [elm("span", { className: "chev", textContent: "▶" }), dot, name, when, ord]));
 
   const refresh = () => { when.textContent = summarise(ev); };
   const box = elm("div", { className: "ev-body" });
@@ -1542,11 +1570,7 @@ function eventCard(ev, group, gi) {
     nest.addEventListener("click", () => { ev.child = true; redrawKeepingOpen(); });
     tools.append(nest);
   }
-  const up = elm("button", { className: "ghost", type: "button", textContent: "↑ Move up" });
-  const down = elm("button", { className: "ghost", type: "button", textContent: "↓ Move down" });
   const del = elm("button", { className: "danger", type: "button", textContent: "Delete" });
-  up.addEventListener("click", () => moveGroup(gi, -1));
-  down.addEventListener("click", () => moveGroup(gi, 1));
   del.addEventListener("click", () => {
     const extra = group.kids.length ? ` and its ${group.kids.length} nested item${group.kids.length === 1 ? "" : "s"}` : "";
     if (confirm(`Delete "${ev.label}"${extra}? This takes effect when you save.`)) {
@@ -1554,7 +1578,7 @@ function eventCard(ev, group, gi) {
       drawEditor();
     }
   });
-  tools.append(up, down, del);
+  tools.append(del);
   box.append(tools);
 
   card.append(box);
@@ -1566,10 +1590,24 @@ function swap(a, b) {
   redrawKeepingOpen();
 }
 
+/* Keep whichever entries were expanded expanded across a redraw. Tracked by id
+   rather than position, or reordering would hand an entry's open state to whatever
+   moved into its place. */
+let refocus = null;              /* { id, dir } - keeps the arrow under the cursor */
+
 function redrawKeepingOpen() {
-  const open = [...document.querySelectorAll("#ev-list .ev")].map((c) => c.open);
+  const open = new Set();
+  document.querySelectorAll("#ev-list .ev").forEach((c) => { if (c.open) open.add(c.dataset.id); });
   drawEditor();
-  [...document.querySelectorAll("#ev-list .ev")].forEach((c, i) => { if (open[i]) c.open = true; });
+  document.querySelectorAll("#ev-list .ev").forEach((c) => { if (open.has(c.dataset.id)) c.open = true; });
+
+  if (refocus) {
+    const card = document.querySelector(`#ev-list .ev[data-id="${CSS.escape(refocus.id)}"]`);
+    const btn = card?.querySelector(`.ord button[data-dir="${refocus.dir}"]`);
+    if (btn && !btn.disabled) btn.focus();
+    card?.scrollIntoView({ block: "nearest" });
+    refocus = null;
+  }
 }
 
 
